@@ -307,11 +307,21 @@ function normalizeProviderOperator(value: unknown): string {
     .replace(/[^a-z0-9]/g, "");
 }
 
+function canonicalProviderOperator(value: unknown): string {
+  const normalized = normalizeProviderOperator(value);
+  if (normalized.includes("tmoney") || normalized.includes("togocel")) return "tmoney";
+  if (normalized.includes("moov")) return "moov";
+  if (normalized.includes("mtn")) return "mtn";
+  if (normalized.includes("orange")) return "orange";
+  if (normalized.includes("wave")) return "wave";
+  return normalized;
+}
+
 async function hasConfiguredManualPaymentNumber(country: string, operator: string): Promise<boolean> {
   const paymentNumbers = await storage.getPaymentNumbersByCountry(country.trim().toUpperCase());
-  const requested = normalizeProviderOperator(operator);
+  const requested = canonicalProviderOperator(operator);
   return paymentNumbers.some((number) => {
-    const configured = normalizeProviderOperator(number.operatorName);
+    const configured = canonicalProviderOperator(number.operatorName);
     return Boolean((number.phone || number.paymentLink) && configured && (
       configured === requested || configured.includes(requested) || requested.includes(configured)
     ));

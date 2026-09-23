@@ -139,9 +139,18 @@ export default function RobotPayPage() {
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
       .replace(/[^a-z0-9]/g, "");
+  const canonicalOperatorName = (value: unknown) => {
+    const normalized = normalizeOperatorName(value);
+    if (normalized.includes("tmoney") || normalized.includes("togocel")) return "tmoney";
+    if (normalized.includes("moov")) return "moov";
+    if (normalized.includes("mtn")) return "mtn";
+    if (normalized.includes("orange")) return "orange";
+    if (normalized.includes("wave")) return "wave";
+    return normalized;
+  };
   const operatorNamesMatch = (first: unknown, second: unknown) => {
-    const firstName = normalizeOperatorName(first);
-    const secondName = normalizeOperatorName(second);
+    const firstName = canonicalOperatorName(first);
+    const secondName = canonicalOperatorName(second);
     return Boolean(firstName && secondName && (
       firstName === secondName || firstName.includes(secondName) || secondName.includes(firstName)
     ));
