@@ -338,13 +338,15 @@ async function run() {
     // ── Seed products ──
     const productsData = [
       { name: "Bonus Gratuit", price: 0, daily_earnings: 50, cycle_days: 80, total_return: 4000, is_free: true, sort_order: 0 },
-      { name: "VIP 1", price: 4000, daily_earnings: 200, cycle_days: 80, total_return: 16000, is_free: false, sort_order: 1 },
-      { name: "VIP 2", price: 10000, daily_earnings: 550, cycle_days: 80, total_return: 44000, is_free: false, sort_order: 2 },
-      { name: "VIP 3", price: 30000, daily_earnings: 1700, cycle_days: 80, total_return: 136000, is_free: false, sort_order: 3 },
-      { name: "VIP 4", price: 60000, daily_earnings: 3500, cycle_days: 80, total_return: 280000, is_free: false, sort_order: 4 },
-      { name: "VIP 5", price: 100000, daily_earnings: 6000, cycle_days: 80, total_return: 480000, is_free: false, sort_order: 5 },
-      { name: "VIP 6", price: 200000, daily_earnings: 13000, cycle_days: 80, total_return: 1040000, is_free: false, sort_order: 6 },
-      { name: "VIP 7", price: 500000, daily_earnings: 35000, cycle_days: 80, total_return: 2800000, is_free: false, sort_order: 7 },
+      { name: "VIP 1", price: 3000, daily_earnings: 450, cycle_days: 120, total_return: 54000, is_free: false, sort_order: 1 },
+      { name: "VIP 2", price: 7000, daily_earnings: 1000, cycle_days: 120, total_return: 120000, is_free: false, sort_order: 2 },
+      { name: "VIP 3", price: 10000, daily_earnings: 1950, cycle_days: 120, total_return: 234000, is_free: false, sort_order: 3 },
+      { name: "VIP 4", price: 15000, daily_earnings: 2950, cycle_days: 120, total_return: 354000, is_free: false, sort_order: 4 },
+      { name: "VIP 5", price: 25000, daily_earnings: 3500, cycle_days: 120, total_return: 420000, is_free: false, sort_order: 5 },
+      { name: "VIP 6", price: 35000, daily_earnings: 4500, cycle_days: 120, total_return: 540000, is_free: false, sort_order: 6 },
+      { name: "VIP 7", price: 50000, daily_earnings: 10000, cycle_days: 120, total_return: 1200000, is_free: false, sort_order: 7 },
+      { name: "VIP 8", price: 100000, daily_earnings: 25000, cycle_days: 120, total_return: 3000000, is_free: false, sort_order: 8 },
+      { name: "VIP 9", price: 250000, daily_earnings: 55000, cycle_days: 120, total_return: 6600000, is_free: false, sort_order: 9 },
     ];
     for (const p of productsData) {
       await client.query(

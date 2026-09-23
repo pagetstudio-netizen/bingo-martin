@@ -170,13 +170,15 @@ export async function seed() {
   if (existingProducts.length === 0) {
     const defaultProducts = [
       { name: "Bonus Gratuit", price: 0, dailyEarnings: 50, cycleDays: 1, totalReturn: 50, isFree: true, sortOrder: 0 },
-      { name: "VIP 1", price: 4000, dailyEarnings: 300, cycleDays: 90, totalReturn: 27000, sortOrder: 1 },
-      { name: "VIP 2", price: 10000, dailyEarnings: 800, cycleDays: 90, totalReturn: 72000, sortOrder: 2 },
-      { name: "VIP 3", price: 15000, dailyEarnings: 1500, cycleDays: 90, totalReturn: 135000, sortOrder: 3 },
-      { name: "VIP 4", price: 25000, dailyEarnings: 2000, cycleDays: 90, totalReturn: 180000, sortOrder: 4 },
-      { name: "VIP 5", price: 40000, dailyEarnings: 3500, cycleDays: 90, totalReturn: 315000, sortOrder: 5 },
-      { name: "VIP 6", price: 100000, dailyEarnings: 10000, cycleDays: 90, totalReturn: 900000, sortOrder: 6 },
-      { name: "VIP 7", price: 250000, dailyEarnings: 30000, cycleDays: 90, totalReturn: 2700000, sortOrder: 7 },
+      { name: "VIP 1", price: 3000, dailyEarnings: 450, cycleDays: 120, totalReturn: 54000, sortOrder: 1 },
+      { name: "VIP 2", price: 7000, dailyEarnings: 1000, cycleDays: 120, totalReturn: 120000, sortOrder: 2 },
+      { name: "VIP 3", price: 10000, dailyEarnings: 1950, cycleDays: 120, totalReturn: 234000, sortOrder: 3 },
+      { name: "VIP 4", price: 15000, dailyEarnings: 2950, cycleDays: 120, totalReturn: 354000, sortOrder: 4 },
+      { name: "VIP 5", price: 25000, dailyEarnings: 3500, cycleDays: 120, totalReturn: 420000, sortOrder: 5 },
+      { name: "VIP 6", price: 35000, dailyEarnings: 4500, cycleDays: 120, totalReturn: 540000, sortOrder: 6 },
+      { name: "VIP 7", price: 50000, dailyEarnings: 10000, cycleDays: 120, totalReturn: 1200000, sortOrder: 7 },
+      { name: "VIP 8", price: 100000, dailyEarnings: 25000, cycleDays: 120, totalReturn: 3000000, sortOrder: 8 },
+      { name: "VIP 9", price: 250000, dailyEarnings: 55000, cycleDays: 120, totalReturn: 6600000, sortOrder: 9 },
     ];
     await db.insert(products).values(defaultProducts);
     console.log("Products seeded (first install)");
