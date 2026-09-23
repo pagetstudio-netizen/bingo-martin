@@ -64,6 +64,8 @@ export interface IStorage {
   getWithdrawals(status?: string): Promise<(Withdrawal & { user: User })[]>;
   getUserWithdrawals(userId: number): Promise<Withdrawal[]>;
   getWithdrawalByInpayOutTradeNo(reference: string): Promise<Withdrawal | undefined>;
+  getWithdrawalByDrimPayReference(reference: string): Promise<Withdrawal | undefined>;
+  getWithdrawalByDrimPayOrderId(orderId: string): Promise<Withdrawal | undefined>;
   updateWithdrawal(id: number, data: Partial<Withdrawal>): Promise<Withdrawal>;
   claimWithdrawalFinalization(id: number, status: "approved" | "rejected"): Promise<Withdrawal | undefined>;
   getUserWithdrawalCountToday(userId: number): Promise<number>;
@@ -772,6 +774,16 @@ export class DatabaseStorage implements IStorage {
 
   async getWithdrawalByInpayOutTradeNo(reference: string): Promise<Withdrawal | undefined> {
     const [withdrawal] = await db.select().from(withdrawals).where(eq(withdrawals.inpayOutTradeNo, reference));
+    return withdrawal;
+  }
+
+  async getWithdrawalByDrimPayReference(reference: string): Promise<Withdrawal | undefined> {
+    const [withdrawal] = await db.select().from(withdrawals).where(eq(withdrawals.drimpayReference, reference));
+    return withdrawal;
+  }
+
+  async getWithdrawalByDrimPayOrderId(orderId: string): Promise<Withdrawal | undefined> {
+    const [withdrawal] = await db.select().from(withdrawals).where(eq(withdrawals.drimpayOrderId, orderId));
     return withdrawal;
   }
 

@@ -1,6 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import session from "express-session";
+import { createHmac, timingSafeEqual } from "crypto";
 import { storage } from "./storage";
 import bcrypt from "bcrypt";
 import { registerSchema, loginSchema, depositSchema, walletSchema, phoneNumberSchema } from "@shared/schema";
@@ -56,6 +57,17 @@ import {
   verifyAshtechWebhookSignature,
 } from "./ashtechpay";
 import {
+  DRIMPAY_COUNTRY_OPERATORS,
+  getDrimPayPayin,
+  initiateDrimPayPayin,
+  isDrimPayConfigured,
+  isDrimPayCountryEnabled,
+  initiateDrimPayPayout,
+  getDrimPayPayout,
+  mapDrimPayStatus,
+  normalizeDrimPayStatus,
+} from "./drimpay";
+import {
   formatTelegramValue,
   sendTelegramInpayError,
   sendTelegramMessage,
@@ -85,6 +97,10 @@ function getPublicBaseUrl(req: Request): string {
     .split(",")[0]
     .trim();
   return `${forwardedProto}://${req.get("host")}`;
+}
+
+function getRouteParam(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
 
 function checkBruteForce(req: Request, res: Response): boolean {
@@ -230,6 +246,45 @@ async function prepareWithdrawalFeePayment(userId: number, withdrawalAmount: num
   return { payment, requiredAmount };
 }
 
+async function applyDrimPayWithdrawalStatus(
+  withdrawal: { id: number; userId: number; amount: number; status: string },
+  providerStatus: unknown,
+  gatewayReference?: string | null,
+) {
+  if (gatewayReference) {
+    await storage.updateWithdrawal(withdrawal.id, {
+      drimpayGatewayReference: gatewayReference,
+    });
+  }
+
+  const mappedStatus = mapDrimPayStatus(providerStatus);
+  if (mappedStatus === "approved") {
+    return {
+      status: "approved" as const,
+      withdrawal: await storage.claimWithdrawalFinalization(withdrawal.id, "approved"),
+    };
+  }
+  if (mappedStatus === "rejected") {
+    const claimed = await storage.claimWithdrawalFinalization(withdrawal.id, "rejected");
+    if (claimed) {
+      const user = await storage.getUser(claimed.userId);
+      if (user) {
+        await storage.updateUser(user.id, {
+          balance: (parseFloat(user.balance) + claimed.amount).toFixed(2),
+        });
+        await storage.createTransaction({
+          userId: user.id,
+          type: "withdrawal_refund",
+          amount: claimed.amount.toString(),
+          description: `Remboursement retrait DrimPay #${claimed.id}`,
+        });
+      }
+    }
+    return { status: "rejected" as const, withdrawal: claimed };
+  }
+  return { status: "processing" as const, withdrawal };
+}
+
 declare module "express-session" {
   interface SessionData {
     userId: number;
@@ -270,6 +325,7 @@ const PUBLIC_SETTING_KEYS = new Set([
   "westpayEnabled", "westpayChannelName", "westpayCountries",
   "ashtechEnabled", "ashtechChannelName", "ashtechCountries",
   "inpayEnabled", "inpayChannelName", "inpayCountries",
+  "drimpayEnabled", "drimpayChannelName", "drimpayCountries",
 ]);
 const ADMIN_SETTING_KEYS = new Set([
   ...Array.from(PUBLIC_SETTING_KEYS),

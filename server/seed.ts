@@ -44,6 +44,15 @@ export async function seed() {
     CREATE INDEX IF NOT EXISTS "withdrawal_fee_payments_user_status_idx"
       ON "withdrawal_fee_payments" ("user_id", "status")
   `).catch(() => undefined);
+  await db.execute(sql`
+    ALTER TABLE "withdrawals" ADD COLUMN IF NOT EXISTS "drimpay_order_id" text
+  `).catch(() => undefined);
+  await db.execute(sql`
+    ALTER TABLE "withdrawals" ADD COLUMN IF NOT EXISTS "drimpay_reference" text
+  `).catch(() => undefined);
+  await db.execute(sql`
+    ALTER TABLE "withdrawals" ADD COLUMN IF NOT EXISTS "drimpay_gateway_reference" text
+  `).catch(() => undefined);
 
   // Ensure countries table exists
   await db.execute(sql`
@@ -252,6 +261,9 @@ export async function seed() {
     { key: "inpayEnabled", value: "false" },
     { key: "inpayChannelName", value: "InPay" },
     { key: "inpayCountries", value: "" },
+    { key: "drimpayEnabled", value: "false" },
+    { key: "drimpayChannelName", value: "DrimPay" },
+    { key: "drimpayCountries", value: "" },
   ];
 
   for (const settingData of requiredSettings) {
