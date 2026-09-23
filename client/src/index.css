@@ -1,0 +1,571 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* LIGHT MODE - Bingo theme */
+:root {
+  --button-outline: rgba(0,0,0, .10);
+  --badge-outline: rgba(0,0,0, .05);
+
+  --opaque-button-border-intensity: -8;
+
+  --elevate-1: rgba(0,0,0, .03);
+  --elevate-2: rgba(0,0,0, .08);
+
+  --background: 0 0% 96%;
+  --foreground: 0 0% 10%;
+  --border: 0 0% 85%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 10%;
+  --card-border: 0 0% 90%;
+
+  --sidebar: 348 75% 20%;
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-border: 348 75% 14%;
+  --sidebar-primary: 0 0% 100%;
+  --sidebar-primary-foreground: 348 75% 20%;
+  --sidebar-accent: 348 72% 28%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-ring: 348 75% 20%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 10%;
+  --popover-border: 0 0% 90%;
+
+  --primary: 348 83% 42%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 10%;
+
+  --muted: 0 0% 94%;
+  --muted-foreground: 0 0% 45%;
+
+  --accent: 348 70% 94%;
+  --accent-foreground: 348 83% 36%;
+
+  --destructive: 0 75% 55%;
+  --destructive-foreground: 0 0% 100%;
+
+  --input: 0 0% 85%;
+  --ring: 348 83% 42%;
+  --chart-1: 0 75% 50%;
+  --chart-2: 160 65% 45%;
+  --chart-3: 200 70% 50%;
+  --chart-4: 280 65% 55%;
+  --chart-5: 340 70% 55%;
+
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+  --radius: .5rem;
+  --shadow-2xs: 0px 1px 2px 0px rgba(0,0,0,0.05);
+  --shadow-xs: 0px 1px 3px 0px rgba(0,0,0,0.08);
+  --shadow-sm: 0px 2px 4px 0px rgba(0,0,0,0.08);
+  --shadow: 0px 4px 6px -1px rgba(0,0,0,0.08);
+  --shadow-md: 0px 6px 10px -2px rgba(0,0,0,0.1);
+  --shadow-lg: 0px 10px 15px -3px rgba(0,0,0,0.1);
+  --shadow-xl: 0px 20px 25px -5px rgba(0,0,0,0.12);
+  --shadow-2xl: 0px 25px 50px -12px rgba(0,0,0,0.15);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+
+  --sidebar-primary-border: hsl(var(--sidebar-primary));
+  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  --sidebar-accent-border: hsl(var(--sidebar-accent));
+  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  --primary-border: hsl(var(--primary));
+  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  --secondary-border: hsl(var(--secondary));
+  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  --muted-border: hsl(var(--muted));
+  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  --accent-border: hsl(var(--accent));
+  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  --destructive-border: hsl(var(--destructive));
+  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+}
+
+/* Bingo red theme.
+ * This scope is applied to every route so the full project shares the
+ * Bingo identity, including the dashboard.
+ */
+.bingo-theme {
+  --bingo-red: #c8102e;
+  --bingo-red-dark: #9f1028;
+  --bingo-red-deep: #760d1d;
+  --bingo-red-soft: #fff0f2;
+  --bingo-gradient: linear-gradient(112deg, #d51b3d 0%, #a20f2a 100%);
+
+  --background: 350 25% 97%;
+  --foreground: 348 18% 13%;
+  --border: 348 18% 85%;
+  --card: 0 0% 100%;
+  --card-foreground: 348 18% 13%;
+  --card-border: 348 18% 90%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 348 18% 13%;
+  --popover-border: 348 18% 90%;
+  --primary: 348 83% 42%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 350 20% 94%;
+  --secondary-foreground: 348 18% 13%;
+  --muted: 350 16% 93%;
+  --muted-foreground: 348 8% 43%;
+  --accent: 350 65% 93%;
+  --accent-foreground: 348 83% 32%;
+  --input: 348 15% 84%;
+  --ring: 348 83% 42%;
+  --chart-1: 348 83% 42%;
+  --chart-2: 8 70% 42%;
+  --chart-3: 28 70% 48%;
+  --chart-4: 330 62% 50%;
+  --chart-5: 0 64% 45%;
+}
+
+/* Recolor recurring hard-coded brand utilities without changing dashboard
+ * styles, which are now recolored through the Bingo theme.
+ */
+.bingo-theme [class~="text-[#3174d1]"],
+.bingo-theme [class~="text-[#2196F3]"],
+.bingo-theme [class~="text-[#1598e7]"],
+.bingo-theme [class~="text-[#0789c9]"],
+.bingo-theme [class~="text-[#7fc9ff]"],
+.bingo-theme [class~="text-[#FF4500]"] {
+  color: var(--bingo-red) !important;
+}
+
+.bingo-theme [class~="bg-[#3174d1]"],
+.bingo-theme [class~="bg-[#2196F3]"],
+.bingo-theme [class~="bg-[#55c9e5]"],
+.bingo-theme [class~="bg-[#FF4500]"] {
+  background-color: var(--bingo-red) !important;
+}
+
+.bingo-theme [class~="border-[#3174d1]"],
+.bingo-theme [class~="border-[#2196F3]"],
+.bingo-theme [class~="border-[#55c9e5]"],
+.bingo-theme [class~="border-[#7fc9ff]"],
+.bingo-theme [class~="border-[#FF4500]"] {
+  border-color: var(--bingo-red) !important;
+}
+
+/* Inline gradients are used for the branded headers and action buttons.
+ * Preserve black authentication overlays while changing colored gradients.
+ */
+.bingo-theme [style*="linear-gradient"]:not([style*="#000000"]):not([style*="rgb(0, 0, 0)"]):not([style*="rgba(0,0,0"]):not([style*="rgba(0, 0, 0"]) {
+  background: var(--bingo-gradient) !important;
+}
+
+.bingo-theme [style*="#3174d1"],
+.bingo-theme [style*="#55c9e5"],
+.bingo-theme [style*="#2196F3"],
+.bingo-theme [style*="#FF4500"],
+.bingo-theme [style*="#E03E00"] {
+  border-color: var(--bingo-red) !important;
+  color: var(--bingo-red) !important;
+}
+
+.bingo-theme [style*="linear-gradient"][style*="#3174d1"],
+.bingo-theme [style*="linear-gradient"][style*="#55c9e5"],
+.bingo-theme [style*="linear-gradient"][style*="#FF4500"],
+.bingo-theme [style*="linear-gradient"][style*="#E03E00"] {
+  color: white !important;
+}
+
+/* Legacy utility colors from imported screens are mapped to Bingo red. */
+.bingo-theme [class~="text-[#00CC2C]"],
+.bingo-theme [class~="text-[#00cc2c]"],
+.bingo-theme [class~="text-[#009d22]"],
+.bingo-theme [class~="bg-[#00CC2C]"],
+.bingo-theme [class~="bg-[#00cc2c]"],
+.bingo-theme [class~="border-[#00CC2C]"],
+.bingo-theme [class~="border-[#00cc2c]"] {
+  color: var(--bingo-red) !important;
+  border-color: var(--bingo-red) !important;
+}
+
+.bingo-theme [class~="bg-[#00CC2C]"],
+.bingo-theme [class~="bg-[#00cc2c]"] {
+  background-color: var(--bingo-red) !important;
+}
+
+.dark {
+  --button-outline: rgba(255,255,255, .10);
+  --badge-outline: rgba(255,255,255, .05);
+
+  --opaque-button-border-intensity: 9;
+
+  --elevate-1: rgba(255,255,255, .04);
+  --elevate-2: rgba(255,255,255, .09);
+
+  --background: 0 0% 8%;
+  --foreground: 0 0% 95%;
+  --border: 0 0% 20%;
+
+  --card: 0 0% 12%;
+  --card-foreground: 0 0% 95%;
+  --card-border: 0 0% 18%;
+
+  --sidebar: 0 0% 5%;
+  --sidebar-foreground: 0 0% 95%;
+  --sidebar-border: 0 0% 15%;
+  --sidebar-primary: 348 83% 50%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 0 0% 15%;
+  --sidebar-accent-foreground: 0 0% 95%;
+  --sidebar-ring: 348 83% 50%;
+
+  --popover: 0 0% 10%;
+  --popover-foreground: 0 0% 95%;
+  --popover-border: 0 0% 18%;
+
+  --primary: 348 83% 50%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 0 0% 18%;
+  --secondary-foreground: 0 0% 95%;
+
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 55%;
+
+  --accent: 348 80% 45%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 70% 50%;
+  --destructive-foreground: 0 0% 100%;
+
+  --input: 0 0% 22%;
+  --ring: 348 83% 50%;
+  --chart-1: 348 83% 50%;
+  --chart-2: 160 65% 45%;
+  --chart-3: 200 70% 50%;
+  --chart-4: 280 65% 55%;
+  --chart-5: 340 70% 55%;
+
+  --shadow-2xs: 0px 1px 2px 0px rgba(0,0,0,0.2);
+  --shadow-xs: 0px 1px 3px 0px rgba(0,0,0,0.3);
+  --shadow-sm: 0px 2px 4px 0px rgba(0,0,0,0.3);
+  --shadow: 0px 4px 6px -1px rgba(0,0,0,0.3);
+  --shadow-md: 0px 6px 10px -2px rgba(0,0,0,0.35);
+  --shadow-lg: 0px 10px 15px -3px rgba(0,0,0,0.4);
+  --shadow-xl: 0px 20px 25px -5px rgba(0,0,0,0.45);
+  --shadow-2xl: 0px 25px 50px -12px rgba(0,0,0,0.5);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  input[type="search"]::-webkit-search-cancel-button {
+    @apply hidden;
+  }
+
+  [contenteditable][data-placeholder]:empty::before {
+    content: attr(data-placeholder);
+    color: hsl(var(--muted-foreground));
+    pointer-events: none;
+  }
+
+  .no-default-hover-elevate {}
+  .no-default-active-elevate {}
+
+  .toggle-elevate::before,
+  .toggle-elevate-2::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0px;
+    border-radius: inherit;
+    z-index: -1;
+  }
+
+  .toggle-elevate.toggle-elevated::before {
+    background-color: var(--elevate-2);
+  }
+
+  .border.toggle-elevate::before {
+    inset: -1px;
+  }
+
+  .hover-elevate:not(.no-default-hover-elevate),
+  .active-elevate:not(.no-default-active-elevate),
+  .hover-elevate-2:not(.no-default-hover-elevate),
+  .active-elevate-2:not(.no-default-active-elevate) {
+    position: relative;
+    z-index: 0;
+  }
+
+  .hover-elevate:not(.no-default-hover-elevate)::after,
+  .active-elevate:not(.no-default-active-elevate)::after,
+  .hover-elevate-2:not(.no-default-hover-elevate)::after,
+  .active-elevate-2:not(.no-default-active-elevate)::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0px;
+    border-radius: inherit;
+    z-index: 999;
+  }
+
+  .hover-elevate:hover:not(.no-default-hover-elevate)::after,
+  .active-elevate:active:not(.no-default-active-elevate)::after {
+    background-color: var(--elevate-1);
+  }
+
+  .hover-elevate-2:hover:not(.no-default-hover-elevate)::after,
+  .active-elevate-2:active:not(.no-default-active-elevate)::after {
+    background-color: var(--elevate-2);
+  }
+
+  .border.hover-elevate:not(.no-hover-interaction-elevate)::after,
+  .border.active-elevate:not(.no-active-interaction-elevate)::after,
+  .border.hover-elevate-2:not(.no-hover-interaction-elevate)::after,
+  .border.active-elevate-2:not(.no-active-interaction-elevate)::after,
+  .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
+    inset: -1px;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Mobile bottom navigation */
+.bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottom-nav-icon {
+  display: block;
+  flex: none;
+  background-color: currentColor;
+  mask-mode: alpha;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+/* Country/operator picker — matches the compact reference picker on mobile. */
+.country-picker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 38px 16px 0;
+  background: rgba(0, 0, 0, .5);
+}
+
+.country-picker {
+  position: relative;
+  width: min(385px, calc(100vw - 32px));
+  height: min(868px, calc(100dvh - 54px));
+  overflow: hidden;
+  border-radius: 4px;
+  background: #f8f8fa;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
+}
+
+.country-picker-search {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  height: 56px;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  border: 2px solid #151515;
+  border-radius: 5px;
+  padding: 0 13px;
+  background: #f8f8fa;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .16);
+}
+
+.country-picker-search svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  color: #58606a;
+  stroke-width: 3;
+}
+
+.country-picker-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #405462;
+  font: 400 16px Arial, sans-serif;
+}
+
+.country-picker-search input::placeholder {
+  color: #9ba8b0;
+  opacity: 1;
+}
+
+.country-picker-close {
+  position: absolute;
+  top: 8px;
+  right: 7px;
+  z-index: 3;
+  display: none;
+}
+
+.country-picker-list {
+  height: 100%;
+  overflow-y: auto;
+  padding: 47px 0 8px;
+  scrollbar-width: none;
+}
+
+.country-picker-list::-webkit-scrollbar {
+  display: none;
+}
+
+.country-picker-row {
+  display: flex;
+  width: 100%;
+  min-height: 53px;
+  align-items: center;
+  justify-content: space-between;
+  border: 0;
+  padding: 0 14px;
+  background: transparent;
+  color: #405462;
+  font: 400 18px/1.2 Arial, sans-serif;
+  text-align: left;
+}
+
+.country-picker-row.is-selected {
+  background: #e8e8e8;
+}
+
+.country-picker-check {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  background: #606060;
+  color: white;
+}
+
+.country-picker-check svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 3;
+}
+
+.country-picker-empty {
+  padding: 28px 14px;
+  color: #71808a;
+  font: 400 16px Arial, sans-serif;
+}
+
+/* Marquee animation for scrolling text */
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 12s linear infinite;
+}
+
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
+}
+
+a img, button img {
+  pointer-events: none;
+}
+
+/* ── Global button press animations ── */
+button,
+[role="button"] {
+  transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.12s ease,
+              box-shadow 0.12s ease;
+}
+
+button:active,
+[role="button"]:active {
+  transform: scale(0.93);
+  opacity: 0.85;
+}
+
+/* Larger pill / action buttons get a deeper press */
+button.w-full:active,
+button[class*="rounded-full"]:active,
+button[class*="rounded-xl"]:active {
+  transform: scale(0.96);
+  opacity: 0.88;
+}
+
+/* Icon-only small circular buttons spring back more */
+button[class*="rounded-full"][class*="w-9"]:active,
+button[class*="rounded-full"][class*="w-10"]:active,
+button[class*="rounded-full"][class*="w-11"]:active {
+  transform: scale(0.88);
+}
+
+/* Prevent animation on disabled buttons */
+button:disabled,
+button:disabled:active {
+  transform: none;
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Tab / navigation bar items — subtle scale only */
+nav button:active,
+.bottom-nav button:active {
+  transform: scale(0.9);
+}

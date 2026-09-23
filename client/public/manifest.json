@@ -1,0 +1,24 @@
+{
+  "name": "Bingo | Propreté et protection du linge",
+  "short_name": "Bingo",
+  "description": "Bingo, marque internationale du groupe turc HAYAT DHC, propose des produits de qualité supérieure pour nettoyer, protéger et préserver l’éclat de vos vêtements. Fabriqués localement à Bouinan, nos produits accompagnent les familles algériennes au quotidien.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#c8102e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/bingo-logo.png?v=bingo",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/bingo-logo.png?v=bingo",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
