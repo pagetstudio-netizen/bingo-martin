@@ -884,7 +884,6 @@ export async function registerRoutes(
       const operator = String(req.body?.operator || "").trim();
       const phoneResult = phoneNumberSchema.safeParse(req.body?.phone);
       const amount = Number(req.body?.amount);
-      const feePaymentId = req.body?.feePaymentId;
       const activeCountries = await storage.getActiveCountries();
       const countryInfo = activeCountries.find((item) => item.code.toUpperCase() === country);
 
@@ -900,11 +899,8 @@ export async function registerRoutes(
       if (!Number.isInteger(amount) || amount <= 0) {
         return res.status(400).json({ message: "Montant invalide" });
       }
-      const withdrawalFeePayment = feePaymentId !== undefined && feePaymentId !== null
-        ? await validateWithdrawalFeePayment(user.id, feePaymentId, amount)
-        : undefined;
       const minDeposit = parseInt(settings.minDeposit || "3000", 10);
-      if (!withdrawalFeePayment && amount < minDeposit) {
+      if (amount < minDeposit) {
         return res.status(400).json({ message: `Montant minimum: ${minDeposit.toLocaleString()} FCFA` });
       }
       if (!phoneResult.success) {
@@ -931,7 +927,6 @@ export async function registerRoutes(
         country,
         paymentMethod: selectedOperator,
         status: "processing",
-        withdrawalFeePaymentId: withdrawalFeePayment?.id,
       });
       depositId = deposit.id;
       const result = await initiateDrimPayPayin({
@@ -1216,7 +1211,7 @@ export async function registerRoutes(
   app.post("/api/deposits", requireAuth, async (req, res) => {
     try {
       const { amount, accountName, accountNumber, paymentMethod, country, paymentChannelId, useSoleaspay, useWestpay, useInpay, inpayPhone, otpCode,
-        paymentNumberId, channelName, screenshot, paymentMessage, reference, feePaymentId } = req.body;
+        paymentNumberId, channelName, screenshot, paymentMessage, reference } = req.body;
       const user = await storage.getUser(req.session.userId!);
       
       if (!user) {
@@ -1229,10 +1224,7 @@ export async function registerRoutes(
        if (!Number.isFinite(requestedAmount) || requestedAmount <= 0) {
         return res.status(400).json({ message: "Montant invalide" });
        }
-       const withdrawalFeePayment = feePaymentId !== undefined && feePaymentId !== null
-         ? await validateWithdrawalFeePayment(user.id, feePaymentId, requestedAmount)
-         : undefined;
-       if (!withdrawalFeePayment && requestedAmount < minDeposit) {
+       if (requestedAmount < minDeposit) {
         return res.status(400).json({ message: `Montant minimum: ${minDeposit.toLocaleString()} FCFA` });
       }
        if (
@@ -1318,7 +1310,6 @@ export async function registerRoutes(
               status: "processing",
               soleaspayReference: paymentResult.data.reference,
               soleaspayOrderId: orderId,
-              withdrawalFeePaymentId: withdrawalFeePayment?.id,
             });
 
             return res.json({ 
@@ -1361,7 +1352,6 @@ export async function registerRoutes(
             paymentMethod: "WestPay",
             paymentChannelId: normalizedDeposit.paymentChannelId && normalizedDeposit.paymentChannelId > 0 ? normalizedDeposit.paymentChannelId : null,
              status: "pending",
-             withdrawalFeePaymentId: withdrawalFeePayment?.id,
           });
           const callbackUrl = `${baseUrl}/api/westpay/callback?depositId=${deposit.id}`;
           const westpayUrl = westpayBuildUrl({
@@ -1410,7 +1400,6 @@ export async function registerRoutes(
           paymentMethod: "InPay",
           paymentChannelId: normalizedDeposit.paymentChannelId && normalizedDeposit.paymentChannelId > 0 ? normalizedDeposit.paymentChannelId : null,
            status: "processing",
-           withdrawalFeePaymentId: withdrawalFeePayment?.id,
         });
         const outTradeNo = inpayCreateOutTradeNo("PAYIN", inpayDeposit.id, user.id);
         const account = getInpayAccount(normalizedCountry, settings);
@@ -1428,7 +1417,6 @@ export async function registerRoutes(
           });
           const deposit = await storage.updateDeposit(inpayDeposit.id, {
            status: "processing",
-           withdrawalFeePaymentId: withdrawalFeePayment?.id,
             inpayOutTradeNo: outTradeNo,
             inpayOrderNumber: result.orderNumber,
           });
@@ -1469,7 +1457,6 @@ export async function registerRoutes(
         paymentMessage: paymentMessage || null,
         reference: reference || null,
          status: "pending",
-         withdrawalFeePaymentId: withdrawalFeePayment?.id,
       });
 
       res.json({ deposit, soleaspay: false });
@@ -1575,7 +1562,7 @@ export async function registerRoutes(
 
   app.post("/api/ashtechpay/collect", requireAuth, async (req, res) => {
     try {
-      const { amount, country, operator, phone, otp, depositId, reference: requestedReference, feePaymentId } = req.body;
+      const { amount, country, operator, phone, otp, depositId, reference: requestedReference } = req.body;
       const user = await storage.getUser(req.session.userId!);
       if (!user) return res.status(401).json({ message: "Non authentifié" });
 
@@ -1598,12 +1585,7 @@ export async function registerRoutes(
       if (existingDeposit?.status === "rejected") {
         return res.status(409).json({ message: "Ce dépôt a déjà été refusé" });
       }
-      const withdrawalFeePayment = existingDeposit?.withdrawalFeePaymentId
-        ? await validateWithdrawalFeePayment(user.id, existingDeposit.withdrawalFeePaymentId, numericAmount)
-        : feePaymentId !== undefined && feePaymentId !== null
-          ? await validateWithdrawalFeePayment(user.id, feePaymentId, numericAmount)
-          : undefined;
-      if (!withdrawalFeePayment && numericAmount < minDeposit) {
+      if (numericAmount < minDeposit) {
         return res.status(400).json({ message: `Montant minimum: ${minDeposit.toLocaleString()} FCFA` });
       }
       if (!country || !operator || !phone) {
@@ -1680,7 +1662,6 @@ export async function registerRoutes(
             status: mappedStatus === "approved" ? "processing" : mappedStatus,
             ashtechTransactionId: result.transaction_id,
             ashtechReference: reference,
-             withdrawalFeePaymentId: withdrawalFeePayment?.id,
           });
 
       if (mappedStatus === "approved") {
@@ -1707,7 +1688,6 @@ export async function registerRoutes(
           operator: requestOperator,
           phone: requestPhone,
            depositId: requestDepositId,
-           feePaymentId: requestFeePaymentId,
         } = req.body;
         const otpUser = await storage.getUser(req.session.userId!);
         if (!otpUser) return res.status(401).json({ message: "Non authentifié" });
@@ -1726,8 +1706,6 @@ export async function registerRoutes(
         const otpUssdCode = error.data.ussd_code
           || (requestCountry === "BF" && /orange/i.test(String(requestOperator)) ? `*144*4*6*${otpAmount}#` : null)
           || (requestCountry === "CI" && /orange/i.test(String(requestOperator)) ? "#144*82#" : null);
-        const otpFeePaymentId = otpExistingDeposit?.withdrawalFeePaymentId
-          || (requestFeePaymentId ? Number(requestFeePaymentId) : undefined);
         const otpDeposit = otpExistingDeposit
           ? await storage.updateDeposit(otpExistingDeposit.id, { status: "pending", ashtechReference: otpReference })
           : await storage.createDeposit({
@@ -1739,7 +1717,6 @@ export async function registerRoutes(
               paymentMethod: String(requestOperator).trim(),
               status: "pending",
               ashtechReference: otpReference,
-               withdrawalFeePaymentId: otpFeePaymentId,
             });
 
         return res.status(400).json({
@@ -1832,7 +1809,7 @@ export async function registerRoutes(
   // Create payment (server-side, stores deposit record)
   app.post("/api/sendavapay/create", requireAuth, async (req, res) => {
     try {
-      const { amount, country, operatorId, operatorName, payerPhone, feePaymentId } = req.body;
+      const { amount, country, operatorId, operatorName, payerPhone } = req.body;
       const user = await storage.getUser(req.session.userId!);
       if (!user) return res.status(401).json({ message: "Non authentifié" });
 
@@ -1845,10 +1822,7 @@ export async function registerRoutes(
       if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
         return res.status(400).json({ message: "Montant invalide" });
       }
-      const withdrawalFeePayment = feePaymentId !== undefined && feePaymentId !== null
-        ? await validateWithdrawalFeePayment(user.id, feePaymentId, numericAmount)
-        : undefined;
-      if (!withdrawalFeePayment && numericAmount < minDeposit) {
+      if (numericAmount < minDeposit) {
         return res.status(400).json({ message: `Montant minimum: ${minDeposit.toLocaleString()} FCFA` });
       }
       if (!payerPhone || !payerPhone.trim()) {
@@ -1892,7 +1866,6 @@ export async function registerRoutes(
         status: "processing",
         sendavapayReference: result.data.reference,
         sendavapayToken: result.data.paymentToken,
-         withdrawalFeePaymentId: withdrawalFeePayment?.id,
       });
 
       res.json({
@@ -2369,28 +2342,6 @@ export async function registerRoutes(
   });
 
   // Withdrawals
-  app.post("/api/withdrawal-fee/prepare", requireAuth, async (req, res) => {
-    try {
-      const user = await storage.getUser(req.session.userId!);
-      if (!user) return res.status(401).json({ message: "Non authentifié" });
-      const withdrawalAmount = Number(req.body.amount);
-      if (!Number.isInteger(withdrawalAmount) || withdrawalAmount <= 0) {
-        return res.status(400).json({ message: "Montant de retrait invalide" });
-      }
-      const { payment, requiredAmount } = await prepareWithdrawalFeePayment(user.id, withdrawalAmount);
-      res.json({
-        paymentId: payment.id,
-        status: payment.status,
-        withdrawalAmount,
-        requiredAmount,
-        rate: WITHDRAWAL_PREPAYMENT_RATE,
-        paymentUrl: `/robotpay?amount=${requiredAmount}&country=${encodeURIComponent(user.country)}&feePaymentId=${payment.id}&withdrawalAmount=${withdrawalAmount}`,
-      });
-    } catch (error: any) {
-      res.status(400).json({ message: error.message });
-    }
-  });
-
   app.post("/api/withdrawals", requireAuth, async (req, res) => {
     try {
       const { amount } = req.body;
@@ -2437,27 +2388,6 @@ export async function registerRoutes(
       const maxPerDay = parseInt(settingsForMax.maxWithdrawalsPerDay || "1");
       if (todayCount >= maxPerDay) {
         return res.status(400).json({ message: `Maximum ${maxPerDay} retrait${maxPerDay > 1 ? 's' : ''} par jour` });
-      }
-
-      const { payment: feePayment, requiredAmount } = await prepareWithdrawalFeePayment(user.id, numericAmount);
-      if (feePayment.status !== "paid") {
-        return res.status(402).json({
-          code: "WITHDRAWAL_PREPAYMENT_REQUIRED",
-          message: `Vous devez payer ${requiredAmount} FCFA (25 % du montant du retrait) avant de lancer le retrait.`,
-          paymentId: feePayment.id,
-          requiredAmount,
-          paymentUrl: `/robotpay?amount=${requiredAmount}&country=${encodeURIComponent(user.country)}&feePaymentId=${feePayment.id}&withdrawalAmount=${numericAmount}`,
-        });
-      }
-      const claimedFeePayment = await storage.claimWithdrawalFeePayment(user.id, numericAmount);
-      if (!claimedFeePayment) {
-        return res.status(402).json({
-          code: "WITHDRAWAL_PREPAYMENT_REQUIRED",
-          message: "Le paiement préalable doit être approuvé avant de lancer le retrait.",
-          paymentId: feePayment.id,
-          requiredAmount,
-          paymentUrl: `/robotpay?amount=${requiredAmount}&country=${encodeURIComponent(user.country)}&feePaymentId=${feePayment.id}&withdrawalAmount=${numericAmount}`,
-        });
       }
 
       const settings = await storage.getSettings();
@@ -2792,23 +2722,19 @@ export async function registerRoutes(
 
       const user = await storage.getUser(deposit.userId);
       if (user) {
-        if (deposit.withdrawalFeePaymentId) {
-          await storage.markWithdrawalFeePaymentPaid(deposit.withdrawalFeePaymentId, deposit.id);
-        } else {
-          const newBalance = parseFloat(user.balance) + deposit.amount;
-          await storage.updateUser(user.id, {
-            balance: newBalance.toFixed(2),
-            hasDeposited: true,
-          });
+        const newBalance = parseFloat(user.balance) + deposit.amount;
+        await storage.updateUser(user.id, {
+          balance: newBalance.toFixed(2),
+          hasDeposited: true,
+        });
 
-          await storage.createTransaction({
-            userId: user.id,
-            type: "deposit",
-            amount: deposit.amount.toString(),
-            description: "Dépôt validé",
-          });
-          await storage.processDepositReferralCommissions(deposit.userId, deposit.amount);
-        }
+        await storage.createTransaction({
+          userId: user.id,
+          type: "deposit",
+          amount: deposit.amount.toString(),
+          description: "Dépôt validé",
+        });
+        await storage.processDepositReferralCommissions(deposit.userId, deposit.amount);
       }
 
       await storage.logAdminAction(req.session.userId!, "approve_deposit", deposit.userId, `Dépôt ${deposit.id} approuvé: ${deposit.amount}F`);
