@@ -702,14 +702,6 @@ Level 3: 2%`;
                       <span>Prochain gain :</span>
                       <strong>{formatDateTime(nextEarningDate)}</strong>
                     </div>
-                    <button
-                      type="button"
-                      className="owned-product-cta"
-                      onClick={() => navigate("/my-products")}
-                      data-testid={`button-home-owned-product-${purchase.id}`}
-                    >
-                      Voir le produit
-                    </button>
                   </div>
                 </article>
               );
