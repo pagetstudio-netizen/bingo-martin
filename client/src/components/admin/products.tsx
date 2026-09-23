@@ -37,12 +37,12 @@ export default function AdminProducts() {
 
   const editForm = useForm<ProductForm>({
     resolver: zodResolver(productSchema),
-    defaultValues: { name: "", price: "", dailyEarnings: "", cycleDays: "80", imageUrl: "" },
+    defaultValues: { name: "", price: "", dailyEarnings: "", cycleDays: "120", imageUrl: "" },
   });
 
   const createForm = useForm<ProductForm>({
     resolver: zodResolver(productSchema),
-    defaultValues: { name: "", price: "", dailyEarnings: "", cycleDays: "80", imageUrl: "" },
+    defaultValues: { name: "", price: "", dailyEarnings: "", cycleDays: "120", imageUrl: "" },
   });
 
   const createMutation = useMutation({
