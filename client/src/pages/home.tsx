@@ -28,6 +28,17 @@ type HomeProduct = Product & {
   canClaimFree?: boolean;
 };
 
+type PurchasedProduct = {
+  id: number;
+  productId: number;
+  purchasedAt: string;
+  lastEarningDate: string | null;
+  daysRemaining: number;
+  totalEarned: string;
+  status: "active" | "completed";
+  product?: HomeProduct;
+};
+
 interface ServiceLinks {
   supportLink?: string;
   groupLink?: string;
@@ -60,6 +71,28 @@ function formatFcfa(value: number | string | null | undefined) {
   return `${Number(value || 0).toLocaleString("fr-FR")} FCFA`;
 }
 
+function formatDateTime(value: string | Date | null | undefined) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return date.toLocaleString("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function getNextEarningDate(lastEarningDate: string | null, purchasedAt: string) {
+  const baseDate = new Date(lastEarningDate || purchasedAt);
+  if (Number.isNaN(baseDate.getTime())) return null;
+
+  return new Date(baseDate.getTime() + 24 * 60 * 60 * 1000);
+}
+
 export default function HomePage() {
   const { user, refreshUser } = useAuth();
   const [, navigate] = useLocation();
@@ -71,7 +104,7 @@ export default function HomePage() {
     queryKey: ["/api/products"],
   });
 
-  const { data: userProducts, isLoading: ownedLoading } = useQuery<Array<{ product?: HomeProduct }>>({
+  const { data: userProducts, isLoading: ownedLoading } = useQuery<PurchasedProduct[]>({
     queryKey: ["/api/user/products"],
   });
 
@@ -133,12 +166,7 @@ export default function HomePage() {
 
   if (!user) return null;
 
-  const ownedProducts = (userProducts || [])
-    .map((item) => item.product)
-    .filter((product): product is HomeProduct => Boolean(product));
-  const visibleProducts = productTab === "available"
-    ? (products || [])
-    : ownedProducts;
+  const visibleProducts = products || [];
   const isLoading = productTab === "available" ? productsLoading : ownedLoading;
   const handleQuickAction = (label: string, href: string) => {
     if (label === "Service client") {
@@ -344,6 +372,64 @@ Level 3: 2%`;
           font-size: 15px;
           font-weight: 400;
         }
+        .bingo-home .owned-product-card {
+          display: flex;
+          grid-column: 1 / -1;
+          min-width: 0;
+          gap: 14px;
+          padding: 12px;
+          border-radius: 8px;
+          background: #fff;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, .03);
+        }
+        .bingo-home .owned-product-image {
+          display: block;
+          width: 112px;
+          height: 112px;
+          flex: none;
+          border-radius: 7px;
+          object-fit: cover;
+          object-position: center;
+          background: #211f20;
+        }
+        .bingo-home .owned-product-info {
+          min-width: 0;
+          flex: 1;
+        }
+        .bingo-home .owned-product-name {
+          margin: 1px 0 9px;
+          color: ${ACCENT};
+          font-size: 15px;
+          font-weight: 700;
+          line-height: 1.25;
+        }
+        .bingo-home .owned-product-stat {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          gap: 10px;
+          margin-top: 5px;
+          color: #444;
+          font-size: 12px;
+          line-height: 1.25;
+        }
+        .bingo-home .owned-product-stat strong {
+          color: #252525;
+          font-size: 12px;
+          font-weight: 700;
+          text-align: right;
+        }
+        .bingo-home .owned-product-cta {
+          height: 32px;
+          margin-top: 10px;
+          padding: 0 14px;
+          border: 0;
+          border-radius: 6px;
+          background: ${ACCENT};
+          color: #fff;
+          font-size: 12px;
+          font-weight: 700;
+        }
         .bingo-home .empty-products {
           grid-column: 1 / -1;
           padding: 48px 20px;
@@ -491,6 +577,11 @@ Level 3: 2%`;
           .bingo-home .product-body { padding-right: 10px; padding-left: 10px; }
           .bingo-home .product-stat { font-size: 12px; }
           .bingo-home .product-stat strong { font-size: 11px; }
+          .bingo-home .owned-product-card { gap: 10px; padding: 10px; }
+          .bingo-home .owned-product-image { width: 92px; height: 92px; }
+          .bingo-home .owned-product-name { font-size: 14px; }
+          .bingo-home .owned-product-stat,
+          .bingo-home .owned-product-stat strong { font-size: 11px; }
           .bingo-home .welcome-content { padding-right: 20px; padding-left: 20px; }
           .bingo-home .welcome-title { font-size: 21px; }
           .bingo-home .welcome-notice { font-size: 16px; }
@@ -569,6 +660,60 @@ Level 3: 2%`;
                 <p>Aucun produit disponible.</p>
               )}
             </div>
+          ) : productTab === "owned" ? (
+            (userProducts || []).map((purchase, index) => {
+              const product = purchase.product;
+              if (!product) return null;
+
+              const cycleDays = Number(product.cycleDays || 0);
+              const daysRemaining = Number(purchase.daysRemaining || 0);
+              const daysCompleted = Math.max(0, cycleDays - daysRemaining);
+              const nextEarningDate = getNextEarningDate(
+                purchase.lastEarningDate,
+                purchase.purchasedAt,
+              );
+
+              return (
+                <article
+                  className="owned-product-card"
+                  key={purchase.id}
+                  data-testid={`home-owned-product-card-${purchase.id}`}
+                >
+                  <img
+                    className="owned-product-image"
+                    src={product.imageUrl || productImages[index % productImages.length]}
+                    alt={product.name}
+                  />
+                  <div className="owned-product-info">
+                    <h2 className="owned-product-name">{product.name}</h2>
+                    <div className="owned-product-stat">
+                      <span>Jours restants :</span>
+                      <strong>{daysRemaining}</strong>
+                    </div>
+                    <div className="owned-product-stat">
+                      <span>Jours d'exécution :</span>
+                      <strong>{daysCompleted} / {cycleDays}</strong>
+                    </div>
+                    <div className="owned-product-stat">
+                      <span>Achat :</span>
+                      <strong>{formatDateTime(purchase.purchasedAt)}</strong>
+                    </div>
+                    <div className="owned-product-stat">
+                      <span>Prochain gain :</span>
+                      <strong>{formatDateTime(nextEarningDate)}</strong>
+                    </div>
+                    <button
+                      type="button"
+                      className="owned-product-cta"
+                      onClick={() => navigate("/my-products")}
+                      data-testid={`button-home-owned-product-${purchase.id}`}
+                    >
+                      Voir le produit
+                    </button>
+                  </div>
+                </article>
+              );
+            })
           ) : (
             visibleProducts.map((product, index) => (
               <article className="product-card" key={`${product.id}-${index}`}>
@@ -595,34 +740,23 @@ Level 3: 2%`;
                     <span>Total :</span>
                     <strong>{formatFcfa(product.totalReturn)}</strong>
                   </div>
-                  {productTab === "available" ? (
-                    <button
-                      type="button"
-                      className="product-cta"
-                      onClick={() => {
-                        if (product.isFree) {
-                          claimFreeMutation.mutate(product.id);
-                        } else {
-                          setConfirmProduct(product);
-                        }
-                      }}
-                      disabled={product.isFree && !product.canClaimFree}
-                      data-testid={`button-home-product-${product.id}`}
-                    >
-                      {product.isFree
-                        ? product.canClaimFree ? "Réclamer" : "Déjà réclamé"
-                        : "Acheter"}
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="product-cta"
-                      onClick={() => navigate("/my-products")}
-                      data-testid={`button-home-owned-product-${product.id}`}
-                    >
-                      Voir le produit
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    className="product-cta"
+                    onClick={() => {
+                      if (product.isFree) {
+                        claimFreeMutation.mutate(product.id);
+                      } else {
+                        setConfirmProduct(product);
+                      }
+                    }}
+                    disabled={product.isFree && !product.canClaimFree}
+                    data-testid={`button-home-product-${product.id}`}
+                  >
+                    {product.isFree
+                      ? product.canClaimFree ? "Réclamer" : "Déjà réclamé"
+                      : "Acheter"}
+                  </button>
                 </div>
               </article>
             ))

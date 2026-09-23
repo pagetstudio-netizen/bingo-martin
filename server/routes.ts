@@ -663,6 +663,7 @@ export async function registerRoutes(
         id: up.userProduct.id,
         productId: up.userProduct.productId,
         purchasedAt: up.userProduct.purchaseDate,
+        lastEarningDate: up.userProduct.lastEarningDate,
         daysRemaining: up.userProduct.daysRemaining,
         totalEarned: up.userProduct.totalEarned,
         status: up.userProduct.isActive ? 'active' : 'completed',
