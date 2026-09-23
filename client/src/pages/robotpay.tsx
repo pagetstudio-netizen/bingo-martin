@@ -8,9 +8,14 @@ import { useToast } from "@/hooks/use-toast";
 import type { ApiCountry } from "@/lib/countries";
 import type { PaymentNumber } from "@shared/schema";
 
-type Provider = "ashtech" | "sendavapay";
+type Provider = "ashtech" | "sendavapay" | "drimpay";
 type Operator = { id?: string; name?: string; operator?: string; slug?: string; code?: string; requiresOtp?: boolean; status?: string; provider?: Provider; manualNumber?: PaymentNumber };
 type ProviderInfo = { provider: Provider; name: string; providers?: Array<{ provider: Provider; name: string }> };
+type RobotPayConfig = {
+  enabled: boolean;
+  configured: boolean;
+  countries: Array<{ code: string; operators: string[] }>;
+};
 
 function Stepper({ step }: { step: number }) {
   return (
@@ -73,6 +78,10 @@ export default function RobotPayPage() {
     },
     enabled: !!country,
   });
+  const { data: robotPayConfig, isLoading: robotPayLoading } = useQuery<RobotPayConfig>({
+    queryKey: ["/api/robotpay/config"],
+    enabled: providerInfo?.providers?.some(item => item.provider === "drimpay") === true,
+  });
   const provider = providerInfo?.provider || "sendavapay";
   const activeProvider = operator?.provider || provider;
   const availableProviders = providerInfo?.providers || (providerInfo ? [{ provider: providerInfo.provider, name: providerInfo.name }] : []);
@@ -119,7 +128,11 @@ export default function RobotPayPage() {
   const sendavaOperators: Operator[] = availableProviders.some(item => item.provider === "sendavapay")
     ? (sendavaData?.data || []).filter((x: Operator) => x.status === "online").map(x => ({ ...x, provider: "sendavapay" as const }))
     : [];
-  const automaticOperators: Operator[] = [...ashtechOperators, ...sendavaOperators];
+  const drimPayOperators: Operator[] = availableProviders.some(item => item.provider === "drimpay")
+    ? (robotPayConfig?.countries.find(item => item.code.toUpperCase() === country)?.operators || [])
+      .map(name => ({ id: name, name, provider: "drimpay" as const }))
+    : [];
+  const automaticOperators: Operator[] = [...drimPayOperators, ...ashtechOperators, ...sendavaOperators];
   const normalizeOperatorName = (value: unknown) =>
     String(value || "")
       .normalize("NFD")
@@ -162,7 +175,7 @@ export default function RobotPayPage() {
         manualNumber: number,
       })),
   ];
-  const loadingOperators = manualNumbersLoading || providerLoading || sendavaLoading || ashtechLoading;
+  const loadingOperators = manualNumbersLoading || providerLoading || sendavaLoading || ashtechLoading || robotPayLoading;
 
   const sendavaMutation = useMutation({
     mutationFn: async () => {
@@ -218,6 +231,30 @@ export default function RobotPayPage() {
       toast({ title: "Erreur de paiement", description: e.message, variant: "destructive" });
     },
   });
+  const drimPayMutation = useMutation({
+    mutationFn: async () => {
+      if (!operator?.name) throw new Error("Sélectionnez un opérateur");
+      const res = await apiRequest("POST", "/api/robotpay/initiate", {
+        amount,
+        country,
+        operator: operator.name,
+        phone: paymentPhone,
+        feePaymentId,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Initiation impossible");
+      return data;
+    },
+    onSuccess: (data) => {
+      setDepositId(data.deposit?.id || null);
+      setMessage(data.message || "");
+      setRedirectUrl(data.paymentUrl || "");
+      setStatus(data.status || "processing");
+      setStep(2);
+      if (data.paymentUrl) window.open(data.paymentUrl, "_blank", "noopener,noreferrer");
+    },
+    onError: (e: any) => toast({ title: "Erreur de paiement", description: e.message, variant: "destructive" }),
+  });
   const manualMutation = useMutation({
     mutationFn: async () => {
       const number = operator?.manualNumber;
@@ -252,7 +289,11 @@ export default function RobotPayPage() {
   useEffect(() => {
     if (step !== 2 || !depositId || status === "approved") return;
     const timer = setInterval(async () => {
-      const url = activeProvider === "ashtech" ? `/api/deposits/${depositId}/ashtechpay-status` : `/api/deposits/${depositId}/sendavapay-status`;
+      const url = activeProvider === "ashtech"
+        ? `/api/deposits/${depositId}/ashtechpay-status`
+        : activeProvider === "drimpay"
+          ? `/api/robotpay/deposits/${depositId}/status`
+          : `/api/deposits/${depositId}/sendavapay-status`;
       const res = await fetch(url, { credentials: "include" });
       const data = await res.json();
       setStatus(data.status);
@@ -267,6 +308,7 @@ export default function RobotPayPage() {
     if (!operator) { toast({ title: "Opérateur requis", description: "Sélectionnez votre opérateur.", variant: "destructive" }); return; }
     if (operator.manualNumber) manualMutation.mutate();
     else if (activeProvider === "ashtech") ashtechMutation.mutate(undefined);
+    else if (activeProvider === "drimpay") drimPayMutation.mutate();
     else sendavaMutation.mutate();
   };
   const submitOtp = async () => {
@@ -279,7 +321,7 @@ export default function RobotPayPage() {
     if (!res.ok) { toast({ title: "OTP invalide", variant: "destructive" }); return; }
     setStep(2); setStatus("processing");
   };
-  const busy = sendavaMutation.isPending || ashtechMutation.isPending || manualMutation.isPending;
+  const busy = sendavaMutation.isPending || ashtechMutation.isPending || drimPayMutation.isPending || manualMutation.isPending;
 
   const copyPaymentNumber = async () => {
     const number = operator?.manualNumber;

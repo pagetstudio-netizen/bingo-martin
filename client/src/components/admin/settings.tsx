@@ -76,6 +76,9 @@ const settingsSchema = z.object({
   ashtechEnabled: z.boolean(),
   ashtechChannelName: z.string().min(1, "Nom requis"),
   ashtechCountries: z.string(),
+  drimpayEnabled: z.boolean(),
+  drimpayChannelName: z.string().min(1, "Nom requis"),
+  drimpayCountries: z.string(),
   inpayEnabled: z.boolean(),
   inpayChannelName: z.string().min(1, "Nom requis"),
   inpayCountries: z.string(),
@@ -147,6 +150,9 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
       ashtechEnabled: true,
       ashtechChannelName: "AshtechPay",
       ashtechCountries: "BF,TG,CM,BJ",
+      drimpayEnabled: false,
+      drimpayChannelName: "DrimPay",
+      drimpayCountries: "",
       inpayEnabled: false,
       inpayChannelName: "InPay",
       inpayCountries: "",
@@ -194,6 +200,9 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
         ashtechEnabled: settings.ashtechEnabled === "true",
         ashtechChannelName: settings.ashtechChannelName || "AshtechPay",
         ashtechCountries: settings.ashtechCountries || "",
+        drimpayEnabled: settings.drimpayEnabled === "true",
+        drimpayChannelName: settings.drimpayChannelName || "DrimPay",
+        drimpayCountries: settings.drimpayCountries || "",
         inpayEnabled: settings.inpayEnabled === "true",
         inpayChannelName: settings.inpayChannelName || "InPay",
         inpayCountries: settings.inpayCountries || "",
@@ -216,6 +225,7 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
         sendavapayEnabled: String(data.sendavapayEnabled),
         westpayEnabled: String(data.westpayEnabled),
         ashtechEnabled: String(data.ashtechEnabled),
+        drimpayEnabled: String(data.drimpayEnabled),
         inpayEnabled: String(data.inpayEnabled),
       };
       const response = await apiRequest("POST", "/api/admin/settings", serialized);
@@ -808,6 +818,54 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               <p>Ajoutez <code className="bg-green-100 px-1 rounded">ASHTECHPAY_API_KEY</code> dans les Secrets du serveur.</p>
               <p>La clé API n'est jamais enregistrée dans les paramètres ni affichée dans ce formulaire.</p>
               <p>URL de notification à configurer chez AshtechPay : <code className="bg-green-100 px-1 rounded">/api/webhooks/ashtechpay</code>. Le statut est confirmé par interrogation sécurisée de l'API.</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ── DrimPay ── */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Zap className="w-5 h-5 text-emerald-600" />
+              DrimPay — RobotPay
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between rounded-xl border p-3">
+              <div>
+                <p className="text-sm font-semibold text-gray-800">Activer DrimPay</p>
+                <p className="text-xs text-gray-500">Active le paiement Mobile Money automatique sur /robotpay</p>
+              </div>
+              <FormField control={form.control} name="drimpayEnabled" render={({ field }) => (
+                <FormItem className="flex items-center gap-2 space-y-0">
+                  <FormLabel className="text-xs text-gray-500">{field.value ? "Actif" : "Désactivé"}</FormLabel>
+                  <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                </FormItem>
+              )} />
+            </div>
+            <FormField control={form.control} name="drimpayChannelName" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nom du canal affiché</FormLabel>
+                <FormControl><Input {...field} placeholder="DrimPay" /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="drimpayCountries" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Pays autorisés (codes séparés par virgule)</FormLabel>
+                <FormControl><Input {...field} placeholder="TG,BJ,CM,BF,ML,SN,CI — vide = tous" /></FormControl>
+                <FormDescription className="text-xs">
+                  Pays DrimPay disponibles : TG, BJ, CM, BF, ML, SN et CI. Les clés API et le secret restent dans les Secrets serveur.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-xs text-emerald-800 space-y-1">
+              <p className="font-semibold">Configuration serveur :</p>
+              <p>• <code className="rounded bg-emerald-100 px-1">DRIMPAY_API_KEY</code> — clé API DrimPay</p>
+              <p>• <code className="rounded bg-emerald-100 px-1">DRIMPAY_WEBHOOK_SECRET</code> — secret de signature</p>
+              <p>• URL webhook : <code className="rounded bg-emerald-100 px-1">/api/webhooks/drimpay</code></p>
+              <p className="font-semibold text-red-600">Ne saisissez jamais ces clés dans ce formulaire ou en base de données.</p>
             </div>
           </CardContent>
         </Card>
