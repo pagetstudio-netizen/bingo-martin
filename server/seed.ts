@@ -179,6 +179,7 @@ export async function seed() {
       { name: "VIP 7", price: 50000, dailyEarnings: 10000, cycleDays: 120, totalReturn: 1200000, sortOrder: 7 },
       { name: "VIP 8", price: 100000, dailyEarnings: 25000, cycleDays: 120, totalReturn: 3000000, sortOrder: 8 },
       { name: "VIP 9", price: 250000, dailyEarnings: 55000, cycleDays: 120, totalReturn: 6600000, sortOrder: 9 },
+      { name: "VIP 10", price: 500000, dailyEarnings: 90000, cycleDays: 120, totalReturn: 10800000, sortOrder: 10 },
     ];
     await db.insert(products).values(defaultProducts);
     console.log("Products seeded (first install)");
