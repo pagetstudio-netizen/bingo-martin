@@ -208,7 +208,7 @@ export default function HistoryPage() {
       type: "registration",
       amount: "0",
       description: "Inscription",
-      createdAt: user.createdAt,
+      createdAt: new Date(user.createdAt).toISOString(),
     },
   ].sort((first, second) => new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime());
 

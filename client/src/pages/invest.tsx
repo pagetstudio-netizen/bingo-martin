@@ -194,7 +194,7 @@ export default function InvestPage() {
         const prodIdx   = (products?.findIndex(p => p.id === confirmProduct.id) ?? 0);
         const prodImg   = PRODUCT_IMAGES[prodIdx % PRODUCT_IMAGES.length];
         const shortage  = confirmProduct.price - balance;
-        const daily     = Number(confirmProduct.dailyIncome  || 0);
+        const daily     = Number(confirmProduct.dailyEarnings || 0);
         const total     = Number(confirmProduct.totalReturn  || daily * Number(confirmProduct.cycleDays || 90));
         const duration  = Number(confirmProduct.cycleDays || 90);
 

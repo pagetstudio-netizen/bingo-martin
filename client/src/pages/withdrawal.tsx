@@ -3,10 +3,11 @@ import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { ChevronRight, CreditCard, Loader2, TrendingUp } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { getCountryByCode } from "@/lib/countries";
 import walletIcon from "@assets/téléchargement_(80)_1787363581764.png";
+import withdrawHero from "@assets/70df605a42dc9ac4254ef5fd2de61af4-1_1790192326312.jpg";
 
 interface WalletData {
   id: number;
@@ -29,7 +30,6 @@ export default function WithdrawalPage() {
   const queryClient = useQueryClient();
   const [amount, setAmount] = useState<number | "">("");
   const [selectedWallet, setSelectedWallet] = useState<WalletData | null>(null);
-  const [isPreparingPayment, setIsPreparingPayment] = useState(false);
   const [, navigate] = useLocation();
 
   const countryInfo = user ? getCountryByCode(user.country) : null;
@@ -95,35 +95,10 @@ export default function WithdrawalPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/withdrawals"] });
       setAmount("");
     },
-    onError: (error: Error & { data?: { code?: string; paymentUrl?: string } }) => {
-      if (error.data?.code === "WITHDRAWAL_PREPAYMENT_REQUIRED" && error.data.paymentUrl) {
-        navigate(error.data.paymentUrl);
-        return;
-      }
+    onError: (error: Error) => {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
-
-  const withdrawalPrepayment = amount
-    ? Math.max(1, Math.round(Number(amount) * 25 / 100))
-    : 0;
-
-  const handlePayPrepayment = async () => {
-    if (!amount || Number(amount) < minWithdrawal) {
-      toast({ title: "Montant invalide", description: `Le montant minimum est de ${minWithdrawal} ${currency}`, variant: "destructive" });
-      return;
-    }
-    setIsPreparingPayment(true);
-    try {
-      const response = await apiRequest("POST", "/api/withdrawal-fee/prepare", { amount: Number(amount) });
-      const data = await response.json();
-      navigate(data.paymentUrl);
-    } catch (error: any) {
-      toast({ title: "Paiement indisponible", description: error.message, variant: "destructive" });
-    } finally {
-      setIsPreparingPayment(false);
-    }
-  };
 
   const handleSubmit = () => {
     if (!isWithinWithdrawalHours) {
@@ -157,6 +132,7 @@ export default function WithdrawalPage() {
 
   const balance = parseFloat(user?.balance || "0");
   const hasWallets = wallets.length > 0;
+  const displayCurrency = currency === "XOF" ? "FCFA" : currency;
 
   return (
     <main className="withdraw-reference min-h-screen bg-[#f7f4f2]">
@@ -530,15 +506,277 @@ export default function WithdrawalPage() {
           .withdraw-reference .amount-panel { padding-right: 25px; padding-left: 25px; }
           .withdraw-reference .instruction { font-size: 15px; }
         }
+
+        .withdraw-reference {
+          background: #f2f2f2;
+          color: #1d1d1d;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+        .withdraw-reference .withdraw-screen {
+          max-width: 500px;
+          background: #f2f2f2;
+        }
+        .withdraw-reference .withdraw-hero {
+          height: min(54vw, 270px);
+          min-height: 250px;
+          background: #8e0000;
+        }
+        .withdraw-reference .hero-art {
+          height: 100%;
+          background-color: #8e0000;
+          background-position: center;
+          background-size: cover;
+        }
+        .withdraw-reference .hero-art::before,
+        .withdraw-reference .hero-art::after,
+        .withdraw-reference .hero-pattern {
+          display: none;
+        }
+        .withdraw-reference .withdraw-title {
+          top: 50%;
+          color: #fff;
+          font-size: clamp(32px, 8vw, 48px);
+          font-weight: 500;
+          letter-spacing: 2px;
+          text-shadow:
+            -1px -1px 0 #16b83b,
+            1px -1px 0 #16b83b,
+            -1px 1px 0 #16b83b,
+            1px 1px 0 #16b83b,
+            0 3px 8px rgba(0,0,0,.6);
+          transform: translateY(-50%);
+        }
+        .withdraw-reference .withdraw-back {
+          top: 18px;
+          left: 15px;
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          background: rgba(0,0,0,.25);
+        }
+        .withdraw-reference .withdraw-back::before {
+          top: 13px;
+          left: 16px;
+          width: 13px;
+          height: 13px;
+          border-color: #fff;
+        }
+        .withdraw-reference .history-button {
+          top: 18px;
+          right: 15px;
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          background: rgba(255,255,255,.88);
+        }
+        .withdraw-reference .history-icon {
+          width: 25px;
+          height: 27px;
+          border-color: #222;
+        }
+        .withdraw-reference .history-icon::before {
+          background: #222;
+          box-shadow: 0 6px 0 #222;
+        }
+        .withdraw-reference .history-icon::after {
+          border-color: #222;
+          background: #fff;
+        }
+        .withdraw-reference .receipt-icon {
+          top: 28px;
+          right: 62px;
+          border-color: #222;
+        }
+        .withdraw-reference .receipt-icon::before {
+          background: #222;
+          box-shadow: 0 7px 0 #222;
+        }
+        .withdraw-reference .receipt-icon::after {
+          border-color: #222;
+        }
+        .withdraw-reference .balance-card {
+          position: relative;
+          top: auto;
+          right: auto;
+          left: auto;
+          height: auto;
+          min-height: 84px;
+          margin: 0;
+          padding: 18px 22px;
+          border: 0;
+          border-radius: 0;
+          background: #f2f2f2;
+          box-shadow: none;
+        }
+        .withdraw-reference .balance-label {
+          margin: 0 0 14px;
+          color: #1d1d1d;
+          font-size: 21px;
+          font-weight: 400;
+        }
+        .withdraw-reference .balance-value {
+          display: flex;
+          min-height: 82px;
+          align-items: center;
+          justify-content: center;
+          margin: 0;
+          border-radius: 11px;
+          background: #fff;
+          color: #2eae45;
+          font-size: 29px;
+          font-weight: 400;
+          line-height: 1;
+          box-shadow: 0 1px 2px rgba(0,0,0,.03);
+        }
+        .withdraw-reference .balance-value::before {
+          content: none;
+        }
+        .withdraw-reference .balance-trend {
+          width: 48px;
+          height: 48px;
+          margin-right: 17px;
+          color: #2eae45;
+          stroke-width: 1.4;
+        }
+        .withdraw-reference .balance-value span {
+          order: -1;
+          margin: 0 8px 0 0;
+          font-size: 29px;
+        }
+        .withdraw-reference .wallet-mark {
+          display: none;
+        }
+        .withdraw-reference .amount-panel {
+          display: flex;
+          flex-direction: column;
+          min-height: 0;
+          padding: 0 22px 18px;
+          background: #f2f2f2;
+        }
+        .withdraw-reference .wallet-panel {
+          padding-top: 0;
+          background: #f2f2f2;
+        }
+        .withdraw-reference .wallet-label {
+          margin: 0 22px 16px;
+          color: #1d1d1d;
+          font-size: 21px;
+        }
+        .withdraw-reference .amount-label {
+          order: -1;
+          margin: 0 0 16px;
+          color: #1d1d1d;
+          font-size: 21px;
+        }
+        .withdraw-reference .amount-field {
+          height: 54px;
+          border: 1px solid #e3e3e3;
+          border-radius: 2px;
+          background: #f7f7f7;
+        }
+        .withdraw-reference .amount-field input {
+          order: 2;
+          padding: 0 16px;
+          color: #555;
+          font-size: 18px;
+        }
+        .withdraw-reference .amount-field input::placeholder {
+          color: #727883;
+          opacity: 1;
+        }
+        .withdraw-reference .amount-currency {
+          order: 1;
+          padding: 0 0 0 12px;
+          color: #737984;
+          font-size: 17px;
+        }
+        .withdraw-reference .amount-details {
+          margin: 12px 10px 0;
+          color: #3f3f3f;
+          font-size: 14px;
+        }
+        .withdraw-reference .wallet-choice {
+          width: calc(100% - 44px);
+          height: 60px;
+          margin: 0 22px 22px;
+          padding: 0 15px;
+          border: 1px solid #e2e2e2;
+          border-radius: 9px;
+          background: #fff;
+          color: #555;
+          box-shadow: 0 1px 2px rgba(0,0,0,.03);
+        }
+        .withdraw-reference .wallet-choice img {
+          display: none;
+        }
+        .withdraw-reference .wallet-choice::before {
+          content: none;
+        }
+        .withdraw-reference .wallet-choice svg:last-child {
+          color: #9a9a9a;
+        }
+        .withdraw-reference .wallet-choice > svg:first-child {
+          display: block;
+          width: 27px;
+          height: 27px;
+          margin-right: 16px;
+          color: #696969;
+          stroke-width: 2.4;
+        }
+        .withdraw-reference .wallet-copy {
+          font-size: 17px;
+        }
+        .withdraw-reference .submit {
+          width: calc(100% - 150px);
+          min-height: 62px;
+          margin: 0 auto 12px;
+          border-radius: 32px;
+          background: #d00000;
+          color: #fff;
+          font-size: 27px;
+          font-weight: 700;
+          box-shadow: none;
+        }
+        .withdraw-reference .instructions {
+          padding: 0 22px 28px;
+          background: #f2f2f2;
+        }
+        .withdraw-reference .instructions-title {
+          display: none;
+        }
+        .withdraw-reference .instruction {
+          margin: 0 0 5px;
+          padding-left: 0;
+          color: #444;
+          font-size: 15px;
+          font-weight: 400;
+          line-height: 1.35;
+        }
+        .withdraw-reference .instruction::before {
+          position: static;
+          content: none;
+        }
+        .withdraw-reference .instruction:nth-of-type(1)::before { content: "1. "; }
+        .withdraw-reference .instruction:nth-of-type(2)::before { content: "2. "; }
+        .withdraw-reference .instruction:nth-of-type(3)::before { content: "3. "; }
+        .withdraw-reference .instruction:nth-of-type(4)::before { content: "4. "; }
+        .withdraw-reference .instruction:nth-of-type(5)::before { content: "5. "; }
+        .withdraw-reference .instruction strong {
+          font-weight: 400;
+        }
+        @media (max-width: 360px) {
+          .withdraw-reference .submit { width: calc(100% - 120px); }
+          .withdraw-reference .balance-value { font-size: 25px; }
+          .withdraw-reference .balance-value span { font-size: 25px; }
+        }
       `}</style>
 
       <div className="withdraw-screen">
         <section className="withdraw-hero" aria-label="Retrait">
-          <div className="hero-art" aria-hidden="true">
-            <div className="hero-pattern" />
+          <div className="hero-art" style={{ backgroundImage: `url(${withdrawHero})` }} aria-hidden="true">
             <span className="receipt-icon" />
           </div>
-          <h1 className="withdraw-title">Retrait</h1>
+          <h1 className="withdraw-title">RETRAIT</h1>
           <Link href="/history">
             <button className="history-button" aria-label="Historique des transactions">
               <span className="history-icon" aria-hidden="true" />
@@ -549,62 +787,50 @@ export default function WithdrawalPage() {
           </Link>
           <div className="balance-card">
             <p className="balance-label">Solde du compte</p>
-            <p className="balance-value" data-testid="text-balance">{Math.round(balance).toLocaleString("fr-FR")}<span>{currency}</span></p>
+            <p className="balance-value" data-testid="text-balance">
+              <TrendingUp className="balance-trend" aria-hidden="true" />
+              <span>{displayCurrency}</span>
+              {Math.round(balance).toLocaleString("fr-FR")}
+            </p>
             <div className="wallet-mark" aria-hidden="true"><img src={walletIcon} alt="" /></div>
           </div>
         </section>
 
+        <section className="wallet-panel" aria-label="Portefeuille de retrait">
+          <p className="wallet-label">Veuillez sélectionner votre carte bancaire</p>
+          <button
+            onClick={() => navigate(hasWallets ? "/wallet?from=withdrawal" : "/wallet")}
+            className="wallet-choice"
+            data-testid="button-select-wallet"
+          >
+            <CreditCard aria-hidden="true" />
+            <span className="wallet-copy">
+              {selectedWallet
+                ? `${selectedWallet.accountName} · ${selectedWallet.accountNumber}`
+                : "Choisissez votre portefeuille"}
+            </span>
+            <ChevronRight aria-hidden="true" />
+          </button>
+        </section>
+
         <section className="amount-panel" aria-label="Montant de retrait">
-          <p className="amount-label">Veuillez saisir le montant de retrait</p>
+          <p className="amount-label">Entrez le montant de retrait</p>
           <label className="amount-field">
+            <span className="amount-currency">{displayCurrency}</span>
             <input
               type="number"
               value={amount}
               onChange={(event) => setAmount(event.target.value ? Number(event.target.value) : "")}
-              placeholder="montant"
+              placeholder="Veuillez saisir le montant de retrait"
               data-testid="input-withdrawal-amount"
               aria-label="Montant de retrait"
             />
-            <span className="amount-currency">{currency}</span>
           </label>
           <div className="amount-details">
-            <span>Montant reçu: {amountAfterFees.toLocaleString("fr-FR")}</span>
-            <span>Taxe: {withdrawalFee.toFixed(2)}%</span>
-          </div>
-          <div className="prepayment-notice">
-            <strong>Paiement obligatoire avant le retrait</strong>
-            <span>
-              Vous devez payer 25 % du montant du retrait
-              {withdrawalPrepayment > 0
-                ? `, soit ${withdrawalPrepayment.toLocaleString("fr-FR")} ${currency}`
-                : ""}{" "}
-              avant que votre demande soit lancée.
-            </span>
-            <button
-              type="button"
-              onClick={handlePayPrepayment}
-              disabled={isPreparingPayment || !amount || Number(amount) < minWithdrawal}
-              className="pay-prepayment"
-              data-testid="button-pay-withdrawal-prepayment"
-            >
-              {isPreparingPayment ? <Loader2 className="h-4 w-4 animate-spin" /> : "Payer"}
-            </button>
+            <span>Montant reçu : {displayCurrency} {amountAfterFees.toLocaleString("fr-FR")}</span>
+            <span>Taux de frais : {withdrawalFee.toFixed(0)}%</span>
           </div>
         </section>
-
-        <button
-          onClick={() => navigate(hasWallets ? "/wallet?from=withdrawal" : "/wallet")}
-          className="wallet-choice"
-          data-testid="button-select-wallet"
-        >
-          <img src={walletIcon} alt="" />
-          <span className="wallet-copy">
-            {selectedWallet
-              ? `${selectedWallet.accountName} · ${selectedWallet.accountNumber}`
-              : "Choisissez votre portefeuille"}
-          </span>
-          <ChevronRight aria-hidden="true" />
-        </button>
 
         <button
           onClick={handleSubmit}
@@ -612,16 +838,15 @@ export default function WithdrawalPage() {
           className="submit"
           data-testid="button-submit-withdrawal"
         >
-          {withdrawMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : "Retirez votre argent maintenant"}
+          {withdrawMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : "Confirmer"}
         </button>
 
         <section className="instructions" aria-label="Instructions de retrait">
           <h2 className="instructions-title">Instructions de Retrait :</h2>
-          <p className="instruction"><strong>Montant minimum de retrait :</strong> {minWithdrawal.toLocaleString("fr-FR")} {currency}</p>
-          <p className="instruction"><strong>Retraits possibles à tout moment,</strong> sans limite de temps, de montant ou de fréquence</p>
-          <p className="instruction"><strong>Frais de retrait :</strong> {withdrawalFee} % par transaction</p>
-          <p className="instruction"><strong>Délai de traitement :</strong> généralement dans les 2 heures, et exceptionnellement sous 24 heures.</p>
-          <p className="instruction">Vérifiez vos informations de portefeuille avant de soumettre votre demande.</p>
+          <p className="instruction"><strong>Montant minimum de retrait :</strong> {minWithdrawal.toLocaleString("fr-FR")} {displayCurrency}.</p>
+          <p className="instruction"><strong>Les frais de retrait s'élèvent à {withdrawalFee} % du montant retiré.</strong></p>
+          <p className="instruction"><strong>Vous pouvez effectuer des retraits à tout moment.</strong> Les retraits sont disponibles sous 2 à 24 heures.</p>
+          <p className="instruction">Vérifiez vos informations de portefeuille avant de confirmer.</p>
         </section>
       </div>
     </main>
