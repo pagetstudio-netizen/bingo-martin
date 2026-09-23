@@ -168,6 +168,11 @@ function Router() {
           <RegisterPage />
         </PublicRoute>
       </Route>
+      <Route path="/ddddd/">
+        <PublicRoute>
+          <RegisterPage />
+        </PublicRoute>
+      </Route>
       <Route path="/rejoindre">
         <PublicRoute>
           <RegisterPage />

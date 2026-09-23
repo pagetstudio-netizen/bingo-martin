@@ -1,40 +1,4 @@
-import { useAuth } from "@/lib/auth";
-import { useQuery } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
-import { Copy } from "lucide-react";
-
-import bingoShareArt from "@assets/logo-1_1790106035177.png";
-
-export default function SharePage() {
-  const { user } = useAuth();
-  const { toast } = useToast();
-
-  const { data: settings } = useQuery<Record<string, string>>({
-    queryKey: ["/api/settings"],
-  });
-
-  if (!user) return null;
-
-  const referralCode = user.referralCode;
-  const referralLink = `${window.location.origin}/ddddd/#/pages/login/reset?inviteCode=${encodeURIComponent(referralCode)}`;
-  const rates = [
-    settings?.level1Commission || "25",
-    settings?.level2Commission || "3",
-    settings?.level3Commission || "2",
-  ];
-
-  const copyValue = async (value: string, label: string) => {
-    try {
-      await navigator.clipboard.writeText(value);
-      toast({ title: `${label} copié` });
-    } catch {
-      toast({ title: "Copie impossible", description: "Sélectionnez le texte pour le copier." });
-    }
-  };
-
-  return (
-    <main className="share-mobile">
-      <style>{`
+import{a as d,b as p,j as e}from"./index-BBnPX3i6.js";import{u as m}from"./useQuery-DMqFlShh.js";import{b as x}from"./logo-1_1790106035177-BcMb50Rj.js";import{C as h}from"./copy-zQJ1VryI.js";function y(){const{user:r}=d(),{toast:t}=p(),{data:s}=m({queryKey:["/api/settings"]});if(!r)return null;const a=r.referralCode,n=`${window.location.origin}/ddddd/#/pages/login/reset?inviteCode=${encodeURIComponent(a)}`,c=[s?.level1Commission||"25",s?.level2Commission||"3",s?.level3Commission||"2"],l=async(o,i)=>{try{await navigator.clipboard.writeText(o),t({title:`${i} copié`})}catch{t({title:"Copie impossible",description:"Sélectionnez le texte pour le copier."})}};return e.jsxs("main",{className:"share-mobile",children:[e.jsx("style",{children:`
         .share-mobile {
           min-height: 100dvh;
           padding-bottom: 59px;
@@ -139,48 +103,4 @@ export default function SharePage() {
           .share-mobile .share-code { font-size: 24px; }
           .share-mobile .commission-row { font-size: 18px; }
         }
-      `}</style>
-
-      <div className="share-screen">
-        <header className="share-appbar">Share</header>
-        <img className="share-hero" src={bingoShareArt} alt="Bingo" />
-
-        <section className="share-card" aria-label="Code et lien de parrainage">
-          <div className="share-row">
-            <p className="share-value share-link" data-testid="text-share-link">{referralLink}</p>
-            <button
-              type="button"
-              className="copy-button"
-              onClick={() => copyValue(referralLink, "Lien")}
-              data-testid="button-copy-share-link"
-            >
-              <Copy aria-hidden="true" /> Copy
-            </button>
-          </div>
-
-          <div className="share-row">
-            <p className="share-value share-code" data-testid="text-share-code">{referralCode}</p>
-            <button
-              type="button"
-              className="copy-button"
-              onClick={() => copyValue(referralCode, "Code")}
-              data-testid="button-copy-share-code"
-            >
-              <Copy aria-hidden="true" /> Copy
-            </button>
-          </div>
-
-          <h1 className="commission-title">Invite Commission</h1>
-          <div className="commission-list">
-            {rates.map((rate, index) => (
-              <div className="commission-row" key={index}>
-                <span>Level {index + 1} =</span>
-                <strong>{rate}%</strong>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
-    </main>
-  );
-}
+      `}),e.jsxs("div",{className:"share-screen",children:[e.jsx("header",{className:"share-appbar",children:"Share"}),e.jsx("img",{className:"share-hero",src:x,alt:"Bingo"}),e.jsxs("section",{className:"share-card","aria-label":"Code et lien de parrainage",children:[e.jsxs("div",{className:"share-row",children:[e.jsx("p",{className:"share-value share-link","data-testid":"text-share-link",children:n}),e.jsxs("button",{type:"button",className:"copy-button",onClick:()=>l(n,"Lien"),"data-testid":"button-copy-share-link",children:[e.jsx(h,{"aria-hidden":"true"})," Copy"]})]}),e.jsxs("div",{className:"share-row",children:[e.jsx("p",{className:"share-value share-code","data-testid":"text-share-code",children:a}),e.jsxs("button",{type:"button",className:"copy-button",onClick:()=>l(a,"Code"),"data-testid":"button-copy-share-code",children:[e.jsx(h,{"aria-hidden":"true"})," Copy"]})]}),e.jsx("h1",{className:"commission-title",children:"Invite Commission"}),e.jsx("div",{className:"commission-list",children:c.map((o,i)=>e.jsxs("div",{className:"commission-row",children:[e.jsxs("span",{children:["Level ",i+1," ="]}),e.jsxs("strong",{children:[o,"%"]})]},i))})]})]})]})}export{y as default};

@@ -35,10 +35,13 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const params = new URLSearchParams(searchString);
-  // The current invitation format is /invitation?invite?code=ABC123.
-  // Because the format contains a second "?", parse that part explicitly.
+  const hashQuery = typeof window !== "undefined"
+    ? window.location.hash.split("?")[1] || ""
+    : "";
+  const hashInviteCode = new URLSearchParams(hashQuery).get("inviteCode") || "";
   const currentInvitationMatch = searchString.match(/[?&]code=([^&?#]+)/i);
-  const refCode = currentInvitationMatch?.[1]
+  const refCode = hashInviteCode
+    || currentInvitationMatch?.[1]
     || params.get("money")
     || params.get("reg")
     || params.get("code")
