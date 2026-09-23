@@ -86,12 +86,36 @@ export default function AdminWithdrawals() {
     onSettled: () => setProcessingId(null),
   });
 
+  const drimPayMutation = useMutation({
+    mutationFn: async (id: number) => {
+      setProcessingId(id);
+      const res = await fetch(`/api/admin/withdrawals/${id}/drimpay`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || `Erreur ${res.status}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/withdrawals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+      toast({ title: "Retrait envoyé à DrimPay" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Erreur DrimPay", description: error.message, variant: "destructive" });
+    },
+    onSettled: () => setProcessingId(null),
+  });
+
   const filteredWithdrawals = withdrawals?.filter(w =>
     w.accountNumber.includes(filter) ||
     w.user.phone.includes(filter) ||
     w.user.fullName.toLowerCase().includes(filter.toLowerCase()) ||
     ((w as any).inpayOutTradeNo && (w as any).inpayOutTradeNo.toLowerCase().includes(filter.toLowerCase())) ||
-    ((w as any).inpayOrderNumber && (w as any).inpayOrderNumber.toLowerCase().includes(filter.toLowerCase()))
+    ((w as any).inpayOrderNumber && (w as any).inpayOrderNumber.toLowerCase().includes(filter.toLowerCase())) ||
+    ((w as any).drimpayReference && (w as any).drimpayReference.toLowerCase().includes(filter.toLowerCase())) ||
+    ((w as any).drimpayOrderId && (w as any).drimpayOrderId.toLowerCase().includes(filter.toLowerCase()))
   ) || [];
 
   return (
@@ -206,6 +230,18 @@ export default function AdminWithdrawals() {
                       <p className="font-mono font-medium text-foreground">{(withdrawal as any).inpayOrderNumber}</p>
                     </div>
                   )}
+                  {(withdrawal as any).drimpayOrderId && (
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">Commande DrimPay</p>
+                      <p className="font-mono font-medium text-foreground">{(withdrawal as any).drimpayOrderId}</p>
+                    </div>
+                  )}
+                  {(withdrawal as any).drimpayReference && (
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">Référence DrimPay</p>
+                      <p className="font-mono font-medium text-foreground">{(withdrawal as any).drimpayReference}</p>
+                    </div>
+                  )}
                 </div>
 
                 {withdrawal.status === "pending" && (
@@ -221,6 +257,18 @@ export default function AdminWithdrawals() {
                       {processingId === withdrawal.id
                         ? <Loader2 className="w-4 h-4 animate-spin" />
                         : <><Send className="w-4 h-4 mr-1" /> Envoyer à InPay</>}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                      onClick={() => drimPayMutation.mutate(withdrawal.id)}
+                      disabled={processingId === withdrawal.id}
+                      data-testid={`button-send-drimpay-${withdrawal.id}`}
+                    >
+                      {processingId === withdrawal.id
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : <><Send className="w-4 h-4 mr-1" /> Envoyer à DrimPay</>}
                     </Button>
                     <Button
                       size="sm"

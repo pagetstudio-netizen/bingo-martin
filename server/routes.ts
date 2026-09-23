@@ -135,7 +135,7 @@ function clearFailedAttempts(req: Request) {
   loginAttempts.delete(getClientKey(req));
 }
 
-function getBlockedIps(value: string | undefined): string[] {
+function getBlockedIps(value: string | null | undefined): string[] {
   try {
     const parsed = JSON.parse(value || "[]");
     return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
@@ -283,6 +283,20 @@ async function applyDrimPayWithdrawalStatus(
     return { status: "rejected" as const, withdrawal: claimed };
   }
   return { status: "processing" as const, withdrawal };
+}
+
+async function refundRejectedWithdrawal(withdrawal: { id: number; userId: number; amount: number }) {
+  const user = await storage.getUser(withdrawal.userId);
+  if (!user) return;
+  await storage.updateUser(user.id, {
+    balance: (parseFloat(user.balance) + withdrawal.amount).toFixed(2),
+  });
+  await storage.createTransaction({
+    userId: user.id,
+    type: "withdrawal_refund",
+    amount: withdrawal.amount.toString(),
+    description: `Remboursement retrait #${withdrawal.id}`,
+  });
 }
 
 function normalizeProviderOperator(value: unknown): string {
@@ -1552,19 +1566,6 @@ export async function registerRoutes(
                 await storage.processDepositReferralCommissions(deposit.userId, deposit.amount);
               }
 
-async function refundRejectedWithdrawal(withdrawal: { id: number; userId: number; amount: number }) {
-  const user = await storage.getUser(withdrawal.userId);
-  if (!user) return;
-  await storage.updateUser(user.id, {
-    balance: (parseFloat(user.balance) + withdrawal.amount).toFixed(2),
-  });
-  await storage.createTransaction({
-    userId: user.id,
-    type: "withdrawal_refund",
-    amount: withdrawal.amount.toString(),
-    description: `Remboursement retrait InPay #${withdrawal.id}`,
-  });
-}
             }
           }
 

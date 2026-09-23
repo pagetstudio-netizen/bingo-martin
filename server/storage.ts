@@ -40,6 +40,7 @@ export interface IStorage {
   // Deposits
   createDeposit(data: Partial<Deposit>): Promise<Deposit>;
   getDeposit(id: number): Promise<Deposit | undefined>;
+  getDepositByReference(reference: string): Promise<Deposit | undefined>;
   getDepositBySendavapayReference(reference: string): Promise<Deposit | undefined>;
   getDepositByInpayOutTradeNo(reference: string): Promise<Deposit | undefined>;
   getDepositByWestpayReference(reference: string): Promise<Deposit | undefined>;
@@ -530,6 +531,11 @@ export class DatabaseStorage implements IStorage {
 
   async getDeposit(id: number): Promise<Deposit | undefined> {
     const [deposit] = await db.select().from(deposits).where(eq(deposits.id, id));
+    return deposit;
+  }
+
+  async getDepositByReference(reference: string): Promise<Deposit | undefined> {
+    const [deposit] = await db.select().from(deposits).where(eq(deposits.reference, reference));
     return deposit;
   }
 
