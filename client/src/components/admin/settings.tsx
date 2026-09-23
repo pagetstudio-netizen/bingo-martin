@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -243,22 +243,6 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
     },
     onError: (error: any) => {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const [inpayBalances, setInpayBalances] = useState<Record<string, string>>({});
-  const inpayBalanceMutation = useMutation({
-    mutationFn: async (country: string) => {
-      const response = await apiRequest("GET", `/api/admin/inpay/balance/${country}`);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Solde InPay indisponible");
-      return { country, balance: data.balance as string };
-    },
-    onSuccess: ({ country, balance }) => {
-      setInpayBalances((current) => ({ ...current, [country]: balance }));
-    },
-    onError: (error: any) => {
-      toast({ title: "Erreur InPay", description: error.message, variant: "destructive" });
     },
   });
 
@@ -647,86 +631,6 @@ export default function AdminSettings({ isSuperAdmin }: AdminSettingsProps) {
               <p>• <code className="bg-orange-100 px-1 rounded">WESTPAY_API_KEY_TG</code>, <code className="bg-orange-100 px-1 rounded">WESTPAY_API_KEY_BF</code>… — clé API par pays</p>
               <p>• URL webhook à configurer dans votre compte WestPay : <code className="bg-orange-100 px-1 rounded">/api/webhooks/westpay</code></p>
               <p className="font-semibold text-red-600 mt-1">⚠ Ne jamais saisir ces clés dans un formulaire ou les stocker en base de données.</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ── AshtechPay ── */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Zap className="w-5 h-5 text-blue-600" />
-              InPay — Paiements et retraits par pays
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between rounded-xl border p-3">
-              <div>
-                <p className="text-sm font-semibold text-gray-800">Activer InPay</p>
-                <p className="text-xs text-gray-500">Redirection de paiement et envoi des retraits vers InPay</p>
-              </div>
-              <FormField control={form.control} name="inpayEnabled" render={({ field }) => (
-                <FormItem className="flex items-center gap-2 space-y-0">
-                  <FormLabel className="text-xs text-gray-500">{field.value ? "Actif" : "Désactivé"}</FormLabel>
-                  <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                </FormItem>
-              )} />
-            </div>
-            <FormField control={form.control} name="inpayChannelName" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nom du canal affiché</FormLabel>
-                <FormControl><Input {...field} placeholder="InPay" /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="inpayCountries" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Pays InPay activés</FormLabel>
-                <FormControl><Input {...field} placeholder="TG,CI,BJ — codes séparés par virgule" /></FormControl>
-                <FormDescription className="text-xs">Seuls ces pays afficheront InPay. Les identifiants marchands ci-dessous sont séparés par pays.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <div className="space-y-2">
-              <p className="text-sm font-semibold text-gray-800">Comptes marchands et soldes</p>
-              {INPAY_COUNTRIES.map(({ code, name }) => (
-                <FormField
-                  key={code}
-                  control={form.control}
-                  name={`inpayMerchantId_${code}` as keyof SettingsForm}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs">{name} ({code})</FormLabel>
-                      <div className="flex gap-2">
-                        <FormControl><Input {...field} value={String(field.value ?? "")} placeholder={`Merchant ID ${code}`} /></FormControl>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => inpayBalanceMutation.mutate(code)}
-                          disabled={!field.value || inpayBalanceMutation.isPending}
-                        >
-                          {inpayBalanceMutation.isPending && inpayBalanceMutation.variables === code
-                            ? <Loader2 className="w-4 h-4 animate-spin" />
-                            : "Solde"}
-                        </Button>
-                      </div>
-                      {inpayBalances[code] !== undefined && (
-                        <FormDescription className="text-xs text-blue-700">
-                          Solde InPay : {inpayBalances[code]}
-                        </FormDescription>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              ))}
-            </div>
-            <div className="rounded-xl bg-blue-50 border border-blue-100 p-3 text-xs text-blue-800 space-y-1">
-              <p className="font-semibold">Configuration serveur à faire après l'intégration :</p>
-              <p>• <code className="bg-blue-100 px-1 rounded">INPAY_API_BASE_URL</code> — URL de base fournie par InPay</p>
-              <p>• <code className="bg-blue-100 px-1 rounded">INPAY_API_KEY_TG</code>, <code className="bg-blue-100 px-1 rounded">INPAY_API_KEY_CI</code>… — une clé API par pays activé</p>
-              <p>• URL webhook InPay : <code className="bg-blue-100 px-1 rounded">/api/webhooks/inpay</code></p>
-              <p className="font-semibold text-red-600">Ne saisissez jamais les clés API dans ce formulaire : elles restent dans les secrets serveur.</p>
             </div>
           </CardContent>
         </Card>

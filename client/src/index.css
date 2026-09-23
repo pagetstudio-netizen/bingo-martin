@@ -183,18 +183,18 @@
 /* Legacy utility colors from imported screens are mapped to Bingo red. */
 .bingo-theme [class~="text-[#00CC2C]"],
 .bingo-theme [class~="text-[#00cc2c]"],
-.bingo-theme [class~="text-[#009d22]"],
-.bingo-theme [class~="bg-[#00CC2C]"],
-.bingo-theme [class~="bg-[#00cc2c]"],
-.bingo-theme [class~="border-[#00CC2C]"],
-.bingo-theme [class~="border-[#00cc2c]"] {
+.bingo-theme [class~="text-[#009d22]"] {
   color: var(--bingo-red) !important;
-  border-color: var(--bingo-red) !important;
 }
 
 .bingo-theme [class~="bg-[#00CC2C]"],
 .bingo-theme [class~="bg-[#00cc2c]"] {
   background-color: var(--bingo-red) !important;
+}
+
+.bingo-theme [class~="border-[#00CC2C]"],
+.bingo-theme [class~="border-[#00cc2c]"] {
+  border-color: var(--bingo-red) !important;
 }
 
 .dark {

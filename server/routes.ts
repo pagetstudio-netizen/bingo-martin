@@ -2345,7 +2345,7 @@ export async function registerRoutes(
   // Withdrawals
   app.post("/api/withdrawals", requireAuth, async (req, res) => {
     try {
-      const { amount } = req.body;
+      const { amount, walletId } = req.body;
       const numericAmount = Number(amount);
       const user = await storage.getUser(req.session.userId!);
       
@@ -2379,9 +2379,23 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Solde insuffisant" });
       }
 
-      const wallet = await storage.getDefaultWallet(user.id);
+      const requestedWalletId = walletId === undefined || walletId === null || walletId === ""
+        ? null
+        : Number(walletId);
+      if (requestedWalletId !== null && !Number.isInteger(requestedWalletId)) {
+        return res.status(400).json({ message: "Portefeuille de retrait invalide" });
+      }
+
+      const userWallets = await storage.getWallets(user.id);
+      const wallet = requestedWalletId === null
+        ? userWallets.find((item) => item.isDefault)
+        : userWallets.find((item) => item.id === requestedWalletId);
       if (!wallet) {
-        return res.status(400).json({ message: "Enregistrez un portefeuille de retrait" });
+        return res.status(400).json({
+          message: requestedWalletId === null
+            ? "Enregistrez un portefeuille de retrait"
+            : "Le portefeuille sélectionné est introuvable",
+        });
       }
 
       const todayCount = await storage.getUserWithdrawalCountToday(user.id);
