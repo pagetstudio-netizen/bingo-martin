@@ -166,29 +166,13 @@ function updateBlockedIpsCache(values: string[]) {
 }
 // --- end brute-force protection ---
 
-const WITHDRAWAL_PREPAYMENT_RATE = 25;
-
 async function creditApprovedDeposit(deposit: {
   id: number;
   userId: number;
   amount: number;
-  withdrawalFeePaymentId?: number | null;
 }) {
   const user = await storage.getUser(deposit.userId);
   if (!user) return;
-
-  if (deposit.withdrawalFeePaymentId) {
-    await storage.markWithdrawalFeePaymentPaid(deposit.withdrawalFeePaymentId, deposit.id);
-    void sendTelegramMessage(
-      [
-        "✅ <b>Paiement préalable de retrait validé</b>",
-        `Utilisateur : ${formatTelegramValue(user.fullName)}`,
-        `Montant : <b>${formatTelegramValue(deposit.amount)} XOF</b>`,
-        `Référence : ${formatTelegramValue(deposit.id)}`,
-      ].join("\n"),
-    ).catch((error) => console.error("[telegram] withdrawal fee notification failed:", error.message));
-    return;
-  }
 
   await storage.updateUser(user.id, {
     balance: (parseFloat(user.balance) + deposit.amount).toFixed(2),
@@ -210,40 +194,6 @@ async function creditApprovedDeposit(deposit: {
       `Pays : ${formatTelegramValue(user.country)}`,
     ].join("\n"),
   ).catch((error) => console.error("[telegram] deposit notification failed:", error.message));
-}
-
-async function validateWithdrawalFeePayment(
-  userId: number,
-  feePaymentId: unknown,
-  amount: number,
-) {
-  const id = Number(feePaymentId);
-  if (!Number.isInteger(id) || id <= 0) {
-    throw new Error("Paiement préalable invalide");
-  }
-  const payment = await storage.getWithdrawalFeePayment(id);
-  if (!payment || payment.userId !== userId) {
-    throw new Error("Paiement préalable introuvable");
-  }
-  if (payment.status === "used") {
-    throw new Error("Ce paiement préalable a déjà été utilisé");
-  }
-  if (payment.requiredAmount !== amount) {
-    throw new Error("Le montant payé ne correspond pas à cette obligation de retrait");
-  }
-  return payment;
-}
-
-async function prepareWithdrawalFeePayment(userId: number, withdrawalAmount: number) {
-  const requiredAmount = Math.max(1, Math.round(withdrawalAmount * WITHDRAWAL_PREPAYMENT_RATE / 100));
-  const existing = await storage.getActiveWithdrawalFeePayment(userId, withdrawalAmount);
-  const payment = existing || await storage.createWithdrawalFeePayment({
-    userId,
-    withdrawalAmount,
-    requiredAmount,
-    status: "pending",
-  });
-  return { payment, requiredAmount };
 }
 
 async function applyDrimPayWithdrawalStatus(
