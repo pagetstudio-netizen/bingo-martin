@@ -19,7 +19,7 @@ import productImg8 from "@assets/a61f6f9a0bd34ce80a06f7b1c72059bd_1790106066849.
 import depositActionIcon from "@assets/icon_1_1790113934821.png";
 import withdrawalActionIcon from "@assets/icon_2_1790113934863.png";
 import supportActionIcon from "@assets/icon_3-1_1790113934921.png";
-import emptyStateImage from "@assets/05b94578-92ae-48a6-b863-59d59ee49423_1790114751100.png";
+import emptyStateImage from "@assets/05b94578-92ae-48a6-b863-59d59ee49423_1790197770212.png";
 import bingoLogo from "@assets/logo-1_1790106035177.png";
 
 type HomeProduct = Product & {
